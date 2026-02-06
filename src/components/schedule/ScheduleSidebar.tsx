@@ -7,7 +7,7 @@ import { BaseCards } from './sidebar/BaseCards';
 import { SpecialCards } from './sidebar/SpecialCards';
 import { EmptyStatePanel } from './sidebar/EmptyStatePanel';
 import { ToolbarPanel } from './sidebar/ToolbarPanel';
-import type { SchedulePageStore } from '../../store/schedulePageStore';
+import type { SchedulePageStore } from '../../application/schedule/SchedulePageStore';
 
 interface ScheduleSidebarProps {
   store: SchedulePageStore;

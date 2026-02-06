@@ -1,4 +1,4 @@
-﻿export type CalendarStatus = 'none' | 'weekday' | 'weekend' | 'special';
+export type CalendarStatus = 'none' | 'weekday' | 'weekend' | 'special';
 
 export interface CalendarCell {
   key: string;

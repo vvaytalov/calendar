@@ -10,7 +10,8 @@
   Typography
 } from '@mui/material';
 import { panelSx } from './styles';
-import type { ScheduleKind, SpecialFormState } from '../../../types/schedule';
+import type { SpecialFormState } from '../../../application/schedule/types';
+import type { ScheduleKind } from '../../../domain/schedule/types';
 
 interface SpecialFormProps {
   specialForm: SpecialFormState;

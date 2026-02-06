@@ -14,7 +14,8 @@
 } from '@mui/material';
 import { DaysSelector } from './DaysSelector';
 import { panelSx } from './styles';
-import type { BaseFormState, DayNumber } from '../../../types/schedule';
+import type { BaseFormState } from '../../../application/schedule/types';
+import type { DayNumber } from '../../../domain/schedule/types';
 
 interface BaseFormProps {
   baseForm: BaseFormState;
@@ -54,9 +55,6 @@ export function BaseForm({
         </Stack>
 
         <Stack spacing={0.5}>
-          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>
-            Тип расписания
-          </Typography>
           <FormControl size="small">
             <InputLabel>Тип расписания</InputLabel>
             <Select
@@ -147,7 +145,9 @@ export function BaseForm({
           <Select
             value={baseForm.recurrence}
             label="Повторяемость"
-            onChange={(e) => onChange({ recurrence: e.target.value as BaseFormState['recurrence'] })}
+            onChange={(e) =>
+              onChange({ recurrence: e.target.value as BaseFormState['recurrence'] })
+            }
           >
             <MenuItem value="yearly">Каждый год</MenuItem>
             <MenuItem value="none">Отсутствует</MenuItem>
@@ -162,9 +162,7 @@ export function BaseForm({
             </Typography>
 
             <Stack spacing={0.5}>
-              <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>
-                Часы
-              </Typography>
+              <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>Часы</Typography>
               <Stack direction="row" spacing={0.75}>
                 <TextField
                   label="Время (начало)"

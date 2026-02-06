@@ -1,6 +1,6 @@
 ﻿import { Checkbox, FormControlLabel, Stack, Typography } from '@mui/material';
-import { DAY_OPTIONS } from '../../../constants/schedule';
-import type { DayNumber } from '../../../types/schedule';
+import { DAY_OPTIONS } from '../../../shared/calendarConstants';
+import type { DayNumber } from '../../../domain/schedule/types';
 
 interface DaysSelectorProps {
   label: string;

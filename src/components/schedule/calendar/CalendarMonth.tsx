@@ -1,7 +1,7 @@
 ﻿import { Grid, Paper, Typography } from '@mui/material';
 import { CalendarDayCell } from './CalendarDayCell';
 import { CALENDAR_COLORS } from '../../../constants/calendar';
-import type { CalendarCell, CalendarMonthView } from '../../../types/calendar';
+import type { CalendarCell, CalendarMonthView } from '../../../domain/calendar/types';
 
 interface CalendarMonthProps {
   month: CalendarMonthView;

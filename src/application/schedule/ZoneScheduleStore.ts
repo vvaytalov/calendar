@@ -1,11 +1,11 @@
-﻿import { makeAutoObservable, runInAction } from 'mobx';
-import { ScheduleModel } from '../model/scheduleModel';
+import { makeAutoObservable, runInAction } from 'mobx';
+import { ScheduleModel } from './ScheduleModel';
 import type {
   BaseSchedulePayload,
   ScheduleResponse,
   SpecialSchedulePayload
-} from '../types/schedule';
-import type { ScheduleService } from '../service/scheduleService';
+} from '../../domain/schedule/types';
+import type { ScheduleRepository } from './ScheduleRepository';
 
 export class ZoneScheduleStore {
   zoneCode = 'zone24';
@@ -13,10 +13,10 @@ export class ZoneScheduleStore {
   loading = false;
   saving = false;
   error: string | null = null;
-  service: ScheduleService;
+  repository: ScheduleRepository;
 
-  constructor(service: ScheduleService) {
-    this.service = service;
+  constructor(repository: ScheduleRepository) {
+    this.repository = repository;
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
@@ -29,14 +29,14 @@ export class ZoneScheduleStore {
   }
 
   get hasConflicts() {
-    return this.model.hasSpecialConflicts;
+    return this.model.hasConflicts;
   }
 
   async load(): Promise<void> {
     this.loading = true;
     this.error = null;
     try {
-      const data: ScheduleResponse = await this.service.getSchedules(this.zoneCode);
+      const data: ScheduleResponse = await this.repository.getSchedules(this.zoneCode);
       runInAction(() => {
         this.model.setData(data.base, data.special);
       });
@@ -53,54 +53,54 @@ export class ZoneScheduleStore {
 
   async addBase(payload: BaseSchedulePayload): Promise<void> {
     await this.wrapSaving(async () => {
-      const created = await this.service.createBase(this.zoneCode, payload);
+      const created = await this.repository.createBase(this.zoneCode, payload);
       this.model.baseById.set(created.id, created);
     });
   }
 
   async editBase(id: string, payload: BaseSchedulePayload): Promise<void> {
     await this.wrapSaving(async () => {
-      const updated = await this.service.updateBase(this.zoneCode, id, payload);
+      const updated = await this.repository.updateBase(this.zoneCode, id, payload);
       this.model.baseById.set(updated.id, updated);
     });
   }
 
   async removeBase(id: string): Promise<void> {
     await this.wrapSaving(async () => {
-      await this.service.deleteBase(this.zoneCode, id);
+      await this.repository.deleteBase(this.zoneCode, id);
       this.model.baseById.delete(id);
     });
   }
 
   async addSpecial(payload: SpecialSchedulePayload): Promise<void> {
     await this.wrapSaving(async () => {
-      const created = await this.service.createSpecial(this.zoneCode, payload);
+      const created = await this.repository.createSpecial(this.zoneCode, payload);
       this.model.specialById.set(created.id, created);
     });
   }
 
   async editSpecial(id: string, payload: SpecialSchedulePayload): Promise<void> {
     await this.wrapSaving(async () => {
-      const updated = await this.service.updateSpecial(this.zoneCode, id, payload);
+      const updated = await this.repository.updateSpecial(this.zoneCode, id, payload);
       this.model.specialById.set(updated.id, updated);
     });
   }
 
   async removeSpecial(id: string): Promise<void> {
     await this.wrapSaving(async () => {
-      await this.service.deleteSpecial(this.zoneCode, id);
+      await this.repository.deleteSpecial(this.zoneCode, id);
       this.model.specialById.delete(id);
     });
   }
 
   async clearAll(): Promise<void> {
     await this.wrapSaving(async () => {
-      await this.service.clearAll(this.zoneCode);
+      await this.repository.clearAll(this.zoneCode);
       this.model.setData([], []);
     });
   }
 
-  async wrapSaving(callback: () => Promise<void>): Promise<void> {
+  private async wrapSaving(callback: () => Promise<void>): Promise<void> {
     this.saving = true;
     this.error = null;
     try {

@@ -10,7 +10,7 @@
   Chip,
   Button
 } from '@mui/material';
-import type { BaseSchedule, DayNumber } from '../types/schedule';
+import type { BaseSchedule, DayNumber } from '../domain/schedule/types';
 
 const dayLabels: Record<DayNumber, string> = {
   1: 'Пн',

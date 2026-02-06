@@ -10,7 +10,7 @@
 } from '@mui/material';
 import { DeleteOutline, EditOutlined } from '@mui/icons-material';
 import { cardSx, panelSx, sectionTitleSx } from './styles';
-import type { SpecialCard } from '../../../types/schedule';
+import type { SpecialCard } from '../../../application/schedule/types';
 
 interface SpecialCardsProps {
   items: SpecialCard[];

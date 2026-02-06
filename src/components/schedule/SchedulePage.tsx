@@ -4,7 +4,7 @@ import { HeaderBar } from './HeaderBar';
 import { ScheduleSidebar } from './ScheduleSidebar';
 import { YearCalendar } from './YearCalendar';
 import { ConfirmDialog } from './ConfirmDialog';
-import type { SchedulePageStore } from '../../store/schedulePageStore';
+import type { SchedulePageStore } from '../../application/schedule/SchedulePageStore';
 
 interface SchedulePageProps {
   store: SchedulePageStore;

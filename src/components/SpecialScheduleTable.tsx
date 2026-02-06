@@ -10,7 +10,7 @@
   TableRow,
   Paper
 } from '@mui/material';
-import type { SpecialSchedule } from '../types/schedule';
+import type { SpecialSchedule } from '../domain/schedule/types';
 
 interface SpecialScheduleTableProps {
   items: SpecialSchedule[];

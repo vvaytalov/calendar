@@ -1,5 +1,5 @@
 ﻿import { Box, Button, Grid, Typography } from '@mui/material';
-import type { CalendarCell } from '../../../types/calendar';
+import type { CalendarCell } from '../../../domain/calendar/types';
 
 interface CalendarDayCellProps {
   cell: CalendarCell;

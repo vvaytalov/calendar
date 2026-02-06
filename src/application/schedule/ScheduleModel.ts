@@ -1,5 +1,6 @@
-﻿import { makeAutoObservable } from 'mobx';
-import type { BaseSchedule, SpecialSchedule } from '../types/schedule';
+import { makeAutoObservable } from 'mobx';
+import { hasSpecialConflicts } from '../../domain/schedule/rules';
+import type { BaseSchedule, SpecialSchedule } from '../../domain/schedule/types';
 
 export class ScheduleModel {
   baseById = new Map<string, BaseSchedule>();
@@ -22,21 +23,7 @@ export class ScheduleModel {
     return [...this.specialById.values()].sort((a, b) => b.priority - a.priority);
   }
 
-  get hasSpecialConflicts(): boolean {
-    const items = this.specialList.filter((x) => x.isOverrideBase);
-    for (let i = 0; i < items.length; i += 1) {
-      for (let j = i + 1; j < items.length; j += 1) {
-        const a = items[i];
-        const b = items[j];
-        const conflict =
-          a.priority === b.priority &&
-          new Date(a.dateFrom) < new Date(b.dateTo) &&
-          new Date(b.dateFrom) < new Date(a.dateTo);
-
-        if (conflict) return true;
-      }
-    }
-
-    return false;
+  get hasConflicts(): boolean {
+    return hasSpecialConflicts(this.specialList);
   }
 }

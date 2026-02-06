@@ -2,7 +2,7 @@
 import { observer } from 'mobx-react-lite';
 import { CalendarLegend } from './calendar/CalendarLegend';
 import { CalendarMonth } from './calendar/CalendarMonth';
-import type { SchedulePageStore } from '../../store/schedulePageStore';
+import type { SchedulePageStore } from '../../application/schedule/SchedulePageStore';
 
 interface YearCalendarProps {
   store: SchedulePageStore;

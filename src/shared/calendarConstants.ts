@@ -1,4 +1,4 @@
-﻿import type { BaseFormState, DayNumber, SpecialFormState } from '../types/schedule';
+import type { DayNumber } from '../domain/schedule/types';
 
 export const MONTHS: string[] = [
   'Январь',
@@ -36,30 +36,3 @@ export const DAY_OPTIONS: Array<{ value: DayNumber; label: string }> = [
   { value: 6, label: 'Сб' },
   { value: 7, label: 'Вс' }
 ];
-
-export const BASE_FORM_TEMPLATE: BaseFormState = {
-  scheduleType: 'base',
-  weekdayTitle: 'Будние дни',
-  weekdayFrom: '',
-  weekdayTo: '',
-  weekdayTimeFrom: '08:00',
-  weekdayTimeTo: '20:00',
-  weekdayDays: [1, 2, 3, 4, 5],
-  weekendTitle: 'Выходные дни',
-  weekendFrom: '',
-  weekendTo: '',
-  weekendTimeFrom: '10:00',
-  weekendTimeTo: '18:00',
-  weekendDays: [6, 7],
-  sameAsWeekdays: false,
-  recurrence: 'yearly'
-};
-
-export const SPECIAL_FORM_TEMPLATE: SpecialFormState = {
-  title: 'Специальное расписание',
-  dateFrom: '',
-  dateTo: '',
-  timeFrom: '09:00',
-  timeTo: '18:00',
-  recurrence: 'none'
-};

@@ -14,12 +14,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import type {
   BaseEditorForm,
-  DayNumber,
   ScheduleEditorForm,
-  ScheduleKind,
   ScheduleMode,
   SpecialEditorForm
-} from '../types/schedule';
+} from '../application/schedule/types';
+import type { DayNumber, ScheduleKind } from '../domain/schedule/types';
+import { DAY_OPTIONS } from '../shared/calendarConstants';
 
 const defaultBase: BaseEditorForm = {
   title: '',
@@ -39,15 +39,10 @@ const defaultSpecial: SpecialEditorForm = {
   isOverrideBase: true
 };
 
-const dayOptions: Array<[DayNumber, string]> = [
-  [1, 'Пн'],
-  [2, 'Вт'],
-  [3, 'Ср'],
-  [4, 'Чт'],
-  [5, 'Пт'],
-  [6, 'Сб'],
-  [7, 'Вс']
-];
+const dayOptions: Array<[DayNumber, string]> = DAY_OPTIONS.map((item) => [
+  item.value,
+  item.label
+]);
 
 interface ScheduleEditorModalProps {
   open: boolean;

@@ -1,5 +1,5 @@
 ﻿import { Box, Stack, Typography } from '@mui/material';
-import type { CalendarLegendItem } from '../../../types/calendar';
+import type { CalendarLegendItem } from '../../../domain/calendar/types';
 
 interface CalendarLegendProps {
   items: CalendarLegendItem[];

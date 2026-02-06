@@ -44,21 +44,21 @@ const makeId = (prefix: string) => `${prefix}${Math.random().toString(36).slice(
 const overlaps = (aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) => aStart < bEnd && bStart < aEnd;
 
 const validateBase = (payload: BaseSchedulePayload) => {
-  if (!payload.title?.trim()) return 'Название обяза�,ел�Oно';
-  if (!payload.timeFrom || !payload.timeTo) return 'Укажи�,е в�?емя на�?ала и окон�?ания';
-  if (payload.timeFrom >= payload.timeTo) return 'timeFrom должен б�<�,�O мен�O�^е timeTo';
+  if (!payload.title?.trim()) return 'Название обязательно';
+  if (!payload.timeFrom || !payload.timeTo) return 'Укажите время начала и окончания';
+  if (payload.timeFrom >= payload.timeTo) return 'timeFrom должен быть меньше timeTo';
   if (!Array.isArray(payload.daysOfWeek) || payload.daysOfWeek.length === 0)
-    return '�'�<бе�?и�,е дни недели';
+    return 'Выберите дни недели';
   return null;
 };
 
 const validateSpecial = (payload: SpecialSchedulePayload, currentId: string | null = null) => {
-  if (!payload.title?.trim()) return 'Название обяза�,ел�Oно';
+  if (!payload.title?.trim()) return 'Название обязательно';
   const dateFrom = new Date(payload.dateFrom);
   const dateTo = new Date(payload.dateTo);
 
-  if (Number.isNaN(dateFrom.getTime()) || Number.isNaN(dateTo.getTime())) return 'Неве�?н�<е да�,�<';
-  if (dateFrom >= dateTo) return 'dateFrom должен б�<�,�O мен�O�^е dateTo';
+  if (Number.isNaN(dateFrom.getTime()) || Number.isNaN(dateTo.getTime())) return 'Неверные даты';
+  if (dateFrom >= dateTo) return 'dateFrom должен быть меньше dateTo';
 
   const hasConflict = specialSchedules.some((item) => {
     if (item.id === currentId) return false;
@@ -69,7 +69,7 @@ const validateSpecial = (payload: SpecialSchedulePayload, currentId: string | nu
   });
 
   if (hasConflict)
-    return '�sон�"лик�,: пе�?есе�?ение спе�?иал�Oн�<�. ин�,е�?валов с одинаков�<м п�?ио�?и�,е�,ом';
+    return 'Конфликт: пересечение специальных интервалов с одинаковым приоритетом';
   return null;
 };
 
@@ -98,7 +98,7 @@ app.post('/api/zones/:zone/base-schedules', (req, res) => {
 
 app.put('/api/zones/:zone/base-schedules/:id', (req, res) => {
   const idx = baseSchedules.findIndex((item) => item.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ message: '�-апис�O не найдена' });
+  if (idx === -1) return res.status(404).json({ message: 'Запись не найдена' });
   const payload = req.body as BaseSchedulePayload;
   const validationError = validateBase(payload);
   if (validationError) return res.status(400).json({ message: validationError });
@@ -111,7 +111,7 @@ app.delete('/api/zones/:zone/base-schedules/:id', (req, res) => {
   const before = baseSchedules.length;
   baseSchedules = baseSchedules.filter((item) => item.id !== req.params.id);
   if (baseSchedules.length === before)
-    return res.status(404).json({ message: '�-апис�O не найдена' });
+    return res.status(404).json({ message: 'Запись не найдена' });
   res.status(204).send();
 });
 
@@ -132,7 +132,7 @@ app.post('/api/zones/:zone/special-schedules', (req, res) => {
 
 app.put('/api/zones/:zone/special-schedules/:id', (req, res) => {
   const idx = specialSchedules.findIndex((item) => item.id === req.params.id);
-  if (idx === -1) return res.status(404).json({ message: '�-апис�O не найдена' });
+  if (idx === -1) return res.status(404).json({ message: 'Запись не найдена' });
 
   const payload = req.body as SpecialSchedulePayload;
   const validationError = validateSpecial(payload, req.params.id);
@@ -150,7 +150,7 @@ app.delete('/api/zones/:zone/special-schedules/:id', (req, res) => {
   const before = specialSchedules.length;
   specialSchedules = specialSchedules.filter((item) => item.id !== req.params.id);
   if (specialSchedules.length === before)
-    return res.status(404).json({ message: '�-апис�O не найдена' });
+    return res.status(404).json({ message: 'Запись не найдена' });
   res.status(204).send();
 });
 

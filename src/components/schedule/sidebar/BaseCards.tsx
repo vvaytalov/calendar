@@ -13,7 +13,7 @@
 } from '@mui/material';
 import { DeleteOutline, EditOutlined } from '@mui/icons-material';
 import { cardSx, panelSx, sectionTitleSx } from './styles';
-import type { BaseCard } from '../../../types/schedule';
+import type { BaseCard } from '../../../application/schedule/types';
 
 interface BaseCardsProps {
   items: BaseCard[];

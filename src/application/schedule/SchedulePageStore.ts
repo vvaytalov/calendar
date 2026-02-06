@@ -1,34 +1,24 @@
-﻿import { makeAutoObservable, reaction, runInAction } from 'mobx';
-import { BASE_FORM_TEMPLATE, DAY_LABEL, SPECIAL_FORM_TEMPLATE } from '../constants/schedule';
-import { formatDate, toDateInput } from '../utils/calendar';
-import { CalendarViewStore } from './calendarViewStore';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
+import { CalendarViewStore } from './CalendarViewStore';
+import { createBaseFormState, createSpecialFormState } from './formDefaults';
+import { buildBasePayloads, buildSpecialPayload, toBaseCards, toSpecialCards } from './mappers';
+import { toDateInput } from '../../shared/dateFormat';
 import type {
   BaseCard,
   BaseFormState,
-  BaseSchedule,
-  BaseSchedulePayload,
   ConfirmState,
-  DayNumber,
   EditingState,
   SpecialCard,
-  SpecialFormState,
-  SpecialSchedulePayload
-} from '../types/schedule';
-import type { ZoneScheduleStore } from './zoneScheduleStore';
-
-const cloneBaseForm = (): BaseFormState => ({
-  ...BASE_FORM_TEMPLATE,
-  weekdayDays: [...BASE_FORM_TEMPLATE.weekdayDays],
-  weekendDays: [...BASE_FORM_TEMPLATE.weekendDays]
-});
-
-const cloneSpecialForm = (): SpecialFormState => ({ ...SPECIAL_FORM_TEMPLATE });
+  SpecialFormState
+} from './types';
+import type { BaseSchedule, DayNumber } from '../../domain/schedule/types';
+import type { ZoneScheduleStore } from './ZoneScheduleStore';
 
 export class SchedulePageStore {
   panelMode: 'none' | 'base-form' | 'special-form' = 'none';
   notice = '';
-  baseForm: BaseFormState = cloneBaseForm();
-  specialForm: SpecialFormState = cloneSpecialForm();
+  baseForm: BaseFormState = createBaseFormState();
+  specialForm: SpecialFormState = createSpecialFormState();
   editing: EditingState | null = null;
   confirmState: ConfirmState = {
     open: false,
@@ -71,30 +61,11 @@ export class SchedulePageStore {
   }
 
   get baseCards(): BaseCard[] {
-    return this.dataStore.baseSchedules.map((item) => ({
-      id: item.id,
-      title: item.title,
-      dateLabel: `${formatDate(item.validFrom)} — ${formatDate(item.validTo)}`,
-      timeLabel: `${item.timeFrom} - ${item.timeTo}`,
-      days: item.daysOfWeek.map((day) => DAY_LABEL[day])
-    }));
+    return toBaseCards(this.dataStore.baseSchedules);
   }
 
   get specialCards(): SpecialCard[] {
-    return this.dataStore.specialSchedules.map((item) => {
-      const from = new Date(item.dateFrom);
-      const to = new Date(item.dateTo);
-      const days = Math.max(1, Math.ceil((to.getTime() - from.getTime()) / 86400000) + 1);
-
-      return {
-        id: item.id,
-        title: item.title,
-        dateLabel: `${formatDate(item.dateFrom)} — ${formatDate(item.dateTo)}`,
-        daysLabel: `${days} дн.`,
-        timeLabel: `${from.toISOString().slice(11, 16)} - ${to.toISOString().slice(11, 16)}`,
-        reasonLabel: `Причина: ${item.reason || 'Ручная настройка'}`
-      };
-    });
+    return toSpecialCards(this.dataStore.specialSchedules);
   }
 
   updateBaseForm(patch: Partial<BaseFormState>) {
@@ -119,7 +90,7 @@ export class SchedulePageStore {
     };
   }
 
-  toggleDay(list: DayNumber[], day: DayNumber): DayNumber[] {
+  private toggleDay(list: DayNumber[], day: DayNumber): DayNumber[] {
     return list.includes(day)
       ? list.filter((item) => item !== day)
       : [...list, day].sort((a, b) => a - b);
@@ -153,7 +124,7 @@ export class SchedulePageStore {
     this.panelMode = 'special-form';
   }
 
-  findBaseByDays(days: DayNumber[]): BaseSchedule | undefined {
+  private findBaseByDays(days: DayNumber[]): BaseSchedule | undefined {
     return this.dataStore.baseSchedules.find(
       (item) =>
         item.daysOfWeek.length === days.length && days.every((d) => item.daysOfWeek.includes(d))
@@ -196,7 +167,7 @@ export class SchedulePageStore {
 
     this.editing = { kind: 'special', id: item.id };
     this.specialForm = {
-      ...SPECIAL_FORM_TEMPLATE,
+      ...createSpecialFormState(),
       title: item.title,
       dateFrom: toDateInput(from),
       dateTo: toDateInput(to),
@@ -207,42 +178,18 @@ export class SchedulePageStore {
   }
 
   async saveBase() {
-    const weekdayPayload: BaseSchedulePayload = {
-      title: this.baseForm.weekdayTitle,
-      timeFrom: this.baseForm.weekdayTimeFrom,
-      timeTo: this.baseForm.weekdayTimeTo,
-      daysOfWeek: this.baseForm.weekdayDays,
-      validFrom: this.baseForm.weekdayFrom,
-      validTo: this.baseForm.weekdayTo
-    };
-
-    const weekendPayload: BaseSchedulePayload = {
-      title: this.baseForm.weekendTitle,
-      timeFrom: this.baseForm.sameAsWeekdays
-        ? this.baseForm.weekdayTimeFrom
-        : this.baseForm.weekendTimeFrom,
-      timeTo: this.baseForm.sameAsWeekdays
-        ? this.baseForm.weekdayTimeTo
-        : this.baseForm.weekendTimeTo,
-      daysOfWeek: this.baseForm.weekendDays,
-      validFrom: this.baseForm.sameAsWeekdays
-        ? this.baseForm.weekdayFrom
-        : this.baseForm.weekendFrom || this.baseForm.weekdayFrom,
-      validTo: this.baseForm.sameAsWeekdays
-        ? this.baseForm.weekdayTo
-        : this.baseForm.weekendTo || this.baseForm.weekdayTo
-    };
+    const { weekday, weekend } = buildBasePayloads(this.baseForm);
 
     if (this.editing?.kind === 'base') {
       const weekdayExisting = this.findBaseByDays(this.baseForm.weekdayDays);
       const weekendExisting = this.findBaseByDays(this.baseForm.weekendDays);
 
-      if (weekdayExisting) await this.dataStore.editBase(weekdayExisting.id, weekdayPayload);
-      else await this.dataStore.addBase(weekdayPayload);
+      if (weekdayExisting) await this.dataStore.editBase(weekdayExisting.id, weekday);
+      else await this.dataStore.addBase(weekday);
 
       if (!this.baseForm.sameAsWeekdays) {
-        if (weekendExisting) await this.dataStore.editBase(weekendExisting.id, weekendPayload);
-        else await this.dataStore.addBase(weekendPayload);
+        if (weekendExisting) await this.dataStore.editBase(weekendExisting.id, weekend);
+        else await this.dataStore.addBase(weekend);
       } else if (weekendExisting) {
         await this.dataStore.removeBase(weekendExisting.id);
       }
@@ -251,9 +198,9 @@ export class SchedulePageStore {
         this.notice = 'Основное расписание обновлено';
       });
     } else {
-      await this.dataStore.addBase(weekdayPayload);
+      await this.dataStore.addBase(weekday);
       if (!this.baseForm.sameAsWeekdays) {
-        await this.dataStore.addBase(weekendPayload);
+        await this.dataStore.addBase(weekend);
       }
 
       runInAction(() => {
@@ -267,18 +214,7 @@ export class SchedulePageStore {
   }
 
   async saveSpecial() {
-    const payload: SpecialSchedulePayload = {
-      title: this.specialForm.title,
-      dateFrom: new Date(
-        `${this.specialForm.dateFrom}T${this.specialForm.timeFrom}:00`
-      ).toISOString(),
-      dateTo: new Date(
-        `${this.specialForm.dateTo}T${this.specialForm.timeTo}:00`
-      ).toISOString(),
-      priority: 100,
-      reason: 'Ручная настройка',
-      isOverrideBase: true
-    };
+    const payload = buildSpecialPayload(this.specialForm);
 
     if (this.editing?.kind === 'special') {
       await this.dataStore.editSpecial(this.editing.id, payload);
@@ -293,7 +229,7 @@ export class SchedulePageStore {
     }
 
     runInAction(() => {
-      this.specialForm = cloneSpecialForm();
+      this.specialForm = createSpecialFormState();
       this.resetEditing();
     });
   }
@@ -327,8 +263,7 @@ export class SchedulePageStore {
   deleteBase(id: string) {
     this.requestConfirm({
       title: 'Удалить расписание?',
-      description:
-        'Запись будет удалена без возможности восстановления.',
+      description: 'Запись будет удалена без возможности восстановления.',
       onConfirm: async () => {
         await this.dataStore.removeBase(id);
         runInAction(() => {
@@ -341,8 +276,7 @@ export class SchedulePageStore {
   deleteSpecial(id: string) {
     this.requestConfirm({
       title: 'Удалить расписание?',
-      description:
-        'Запись будет удалена без возможности восстановления.',
+      description: 'Запись будет удалена без возможности восстановления.',
       onConfirm: async () => {
         await this.dataStore.removeSpecial(id);
         runInAction(() => {
@@ -355,8 +289,7 @@ export class SchedulePageStore {
   clearAll() {
     this.requestConfirm({
       title: 'Удалить все расписания?',
-      description:
-        'Будут удалены все базовые и специальные интервалы.',
+      description: 'Будут удалены все базовые и специальные интервалы.',
       confirmLabel: 'Удалить все',
       onConfirm: async () => {
         await this.dataStore.clearAll();

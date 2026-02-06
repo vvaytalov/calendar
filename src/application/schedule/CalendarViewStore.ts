@@ -1,15 +1,15 @@
-﻿import { makeAutoObservable } from 'mobx';
-import { MONTHS, WEEKDAYS } from '../constants/schedule';
-import { CALENDAR_COLORS } from '../constants/calendar';
-import { dayNumber, inRange, isWeekend } from '../utils/calendar';
-import type { BaseSchedule, SpecialSchedule } from '../types/schedule';
+import { makeAutoObservable } from 'mobx';
+import { MONTHS, WEEKDAYS } from '../../shared/calendarConstants';
+import { CALENDAR_COLORS } from '../../constants/calendar';
+import { dayNumber, getMonthCells, inRange, isWeekend, toDateKey } from '../../domain/calendar/utils';
+import type { BaseSchedule, SpecialSchedule } from '../../domain/schedule/types';
 import type {
   CalendarCell,
   CalendarLegendItem,
   CalendarMonthView,
   CalendarStatus
-} from '../types/calendar';
-import type { ZoneScheduleStore } from './zoneScheduleStore';
+} from '../../domain/calendar/types';
+import type { ZoneScheduleStore } from './ZoneScheduleStore';
 
 export class CalendarViewStore {
   year = new Date().getFullYear();
@@ -43,7 +43,7 @@ export class CalendarViewStore {
 
   get months(): CalendarMonthView[] {
     return MONTHS.map((month, monthIndex) => {
-      const cells = this.getMonthCells(this.year, monthIndex).map((cell, index) =>
+      const cells = getMonthCells(this.year, monthIndex).map((cell, index) =>
         this.toCellView(cell, `${month}-${index}`)
       );
 
@@ -85,7 +85,7 @@ export class CalendarViewStore {
     ];
   }
 
-  toCellView(cell: Date | null, key: string): CalendarCell {
+  private toCellView(cell: Date | null, key: string): CalendarCell {
     if (!cell) {
       return {
         key,
@@ -114,7 +114,7 @@ export class CalendarViewStore {
           : status === 'weekday'
             ? CALENDAR_COLORS.weekday
             : CALENDAR_COLORS.textMuted;
-    const dateKey = this.toDateKey(cell);
+    const dateKey = toDateKey(cell);
 
     return {
       key,
@@ -129,7 +129,7 @@ export class CalendarViewStore {
     };
   }
 
-  resolveDayStatus(
+  private resolveDayStatus(
     date: Date,
     baseSchedules: BaseSchedule[],
     specialSchedules: SpecialSchedule[]
@@ -144,24 +144,5 @@ export class CalendarViewStore {
 
     if (!activeBase) return 'none';
     return isWeekend(date) ? 'weekend' : 'weekday';
-  }
-
-  getMonthCells(year: number, monthIndex: number): Array<Date | null> {
-    const monthStart = new Date(year, monthIndex, 1);
-    const monthEnd = new Date(year, monthIndex + 1, 0);
-    const daysInMonth = monthEnd.getDate();
-    const firstWeekDay = (monthStart.getDay() + 6) % 7;
-
-    const cells: Array<Date | null> = [];
-    for (let i = 0; i < firstWeekDay; i += 1) cells.push(null);
-    for (let day = 1; day <= daysInMonth; day += 1) cells.push(new Date(year, monthIndex, day));
-
-    return cells;
-  }
-
-  toDateKey(date: Date): string {
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${date.getFullYear()}-${month}-${day}`;
   }
 }
