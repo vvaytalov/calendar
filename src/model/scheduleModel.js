@@ -1,6 +1,12 @@
+import { makeAutoObservable } from 'mobx';
+
 export class ScheduleModel {
   baseById = new Map();
   specialById = new Map();
+
+  constructor() {
+    makeAutoObservable(this, {}, { autoBind: true });
+  }
 
   setData(base, special) {
     this.baseById = new Map(base.map((item) => [item.id, item]));
