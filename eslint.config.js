@@ -40,6 +40,9 @@ const baseRules = {
 };
 
 export default [
+  {
+    ignores: ['eslint.config.js']
+  },
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx}'],
@@ -71,6 +74,7 @@ export default [
     rules: {
       ...baseRules,
       ...tseslint.configs.recommended.rules,
+      'no-undef': 'off',
       '@typescript-eslint/no-unused-vars': 'off'
     }
   }

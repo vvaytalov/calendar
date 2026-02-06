@@ -41,7 +41,8 @@ let specialSchedules: SpecialSchedule[] = [];
 
 const makeId = (prefix: string) => `${prefix}${Math.random().toString(36).slice(2, 9)}`;
 
-const overlaps = (aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) => aStart < bEnd && bStart < aEnd;
+const overlaps = (aStart: Date, aEnd: Date, bStart: Date, bEnd: Date) =>
+  aStart < bEnd && bStart < aEnd;
 
 const validateBase = (payload: BaseSchedulePayload) => {
   if (!payload.title?.trim()) return 'Название обязательно';
@@ -68,8 +69,7 @@ const validateSpecial = (payload: SpecialSchedulePayload, currentId: string | nu
     return overlaps(dateFrom, dateTo, new Date(item.dateFrom), new Date(item.dateTo));
   });
 
-  if (hasConflict)
-    return 'Конфликт: пересечение специальных интервалов с одинаковым приоритетом';
+  if (hasConflict) return 'Конфликт: пересечение специальных интервалов с одинаковым приоритетом';
   return null;
 };
 
