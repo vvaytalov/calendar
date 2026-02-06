@@ -130,15 +130,15 @@ const App = observer(() => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', py: 3, backgroundColor: '#f2f4f8' }}>
-      <Container maxWidth="xl">
-        <Stack spacing={2}>
-          <Typography variant="h5" fontWeight={700}>Календарь зоны 24</Typography>
+    <Box sx={{ minHeight: '100vh', py: 2.5, backgroundColor: '#F5F7FB' }}>
+      <Container maxWidth="xl" sx={{ px: { xs: 1.5, md: 2 } }}>
+        <Stack spacing={1.5}>
+          <Typography sx={{ fontSize: 22, fontWeight: 700, color: "#111827" }}>Календарь зоны 24</Typography>
 
           {store.error && <Alert severity="error">{store.error}</Alert>}
           {notice && <Alert severity="success" onClose={() => setNotice('')}>{notice}</Alert>}
 
-          <Grid container spacing={2}>
+          <Grid container spacing={1.5}>
             <Grid item xs={12} md={4} lg={3}>
               <ScheduleSidebar
                 panelMode={panelMode}
@@ -171,7 +171,7 @@ const App = observer(() => {
             </Grid>
 
             <Grid item xs={12} md={8} lg={9}>
-              <Paper variant="outlined" sx={{ p: 2 }}>
+              <Paper elevation={0} sx={{ p: 1.5, borderRadius: "14px", border: "1px solid #E5E9F2" }}>
                 <YearCalendar baseSchedules={store.baseSchedules} specialSchedules={store.specialSchedules} />
               </Paper>
             </Grid>
