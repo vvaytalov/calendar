@@ -32,8 +32,12 @@ function HeaderBar({ canSubmit }) {
       alignItems={{ xs: 'flex-start', md: 'center' }}
       spacing={1}
       sx={{
-        py: 0.5,
-        borderBottom: '1px solid #E5E7EB'
+        py: 0.75,
+        px: 1,
+        borderRadius: '12px',
+        border: '1px solid #E6E8EC',
+        backgroundColor: '#FFFFFF',
+        boxShadow: '0px 10px 18px rgba(15, 23, 42, 0.04)'
       }}
     >
       <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: 'wrap' }}>
@@ -42,8 +46,12 @@ function HeaderBar({ canSubmit }) {
             key={item}
             sx={{
               fontSize: 11,
-              color: item === 'Режим работы' ? '#111827' : '#6B7280',
-              fontWeight: item === 'Режим работы' ? 700 : 500
+              color: item === 'Режим работы' ? '#065F46' : '#6B7280',
+              fontWeight: item === 'Режим работы' ? 700 : 500,
+              px: item === 'Режим работы' ? 0.8 : 0,
+              py: item === 'Режим работы' ? 0.25 : 0,
+              borderRadius: item === 'Режим работы' ? '999px' : 0,
+              backgroundColor: item === 'Режим работы' ? '#ECFDF3' : 'transparent'
             }}
           >
             {item}
@@ -60,9 +68,10 @@ function HeaderBar({ canSubmit }) {
           ml: { md: 'auto' },
           fontSize: 10,
           px: 1.5,
-          borderRadius: '8px',
+          borderRadius: '999px',
           borderColor: '#86EFAC',
           color: '#16A34A',
+          backgroundColor: '#ECFDF3',
           '&:hover': {
             borderColor: '#22C55E',
             backgroundColor: '#F0FDF4'
@@ -272,7 +281,13 @@ const App = observer(() => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', py: 1.5, backgroundColor: '#F3F4F6' }}>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        py: 1.5,
+        background: 'linear-gradient(180deg, #F8FAFC 0%, #F3F4F6 45%, #F8FAFC 100%)'
+      }}
+    >
       <Container maxWidth="xl" sx={{ px: { xs: 1, md: 1.5 } }}>
         <Stack spacing={1.25}>
           <HeaderBar canSubmit={hasAnySchedules} />
@@ -316,7 +331,16 @@ const App = observer(() => {
             </Grid>
 
             <Grid item xs={12} md={8.7} lg={9.1}>
-              <Paper elevation={0} sx={{ p: 1.25, borderRadius: '10px', border: '1px solid #E5E7EB' }}>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 1.25,
+                  borderRadius: '12px',
+                  border: '1px solid #E6E8EC',
+                  backgroundColor: '#FFFFFF',
+                  boxShadow: '0px 14px 24px rgba(15, 23, 42, 0.05)'
+                }}
+              >
                 <YearCalendar
                   baseSchedules={store.baseSchedules}
                   specialSchedules={store.specialSchedules}

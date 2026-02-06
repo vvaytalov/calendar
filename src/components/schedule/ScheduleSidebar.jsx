@@ -30,16 +30,25 @@ import { formatDate } from '../../utils/calendar';
 
 const panelSx = {
   p: 1.5,
-  borderRadius: '10px',
-  border: '1px solid #E5E7EB',
-  boxShadow: '0px 1px 2px rgba(15, 23, 42, 0.04)',
+  borderRadius: '12px',
+  border: '1px solid #E6E8EC',
+  boxShadow: '0px 10px 18px rgba(15, 23, 42, 0.04)',
   backgroundColor: '#FFFFFF'
 };
 
 const sectionTitleSx = {
-  fontSize: 12,
+  fontSize: 11,
   fontWeight: 700,
-  color: '#111827'
+  color: '#111827',
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em'
+};
+
+const cardSx = {
+  borderRadius: '12px',
+  borderColor: '#E6E8EC',
+  backgroundColor: '#FFFFFF',
+  boxShadow: '0px 6px 12px rgba(15, 23, 42, 0.04)'
 };
 
 function toggleDay(list, day) {
@@ -74,13 +83,18 @@ function DaysSelector({ label, value, onChange }) {
   );
 }
 
-function BaseForm({ baseForm, editingKind, onChange, onCancel, onSave }) {
+function BaseForm({ baseForm, onChange, onCancel, onSave }) {
   return (
     <Paper elevation={0} sx={panelSx}>
       <Stack spacing={1}>
-        <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>
-          {baseForm.weekdayTitle}
-        </Typography>
+        <Stack spacing={0.35}>
+          <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#22C55E', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Настройка режима
+          </Typography>
+          <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>
+            {baseForm.weekdayTitle}
+          </Typography>
+        </Stack>
 
         <Stack spacing={0.5}>
           <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>Тип расписания</Typography>
@@ -146,7 +160,14 @@ function BaseForm({ baseForm, editingKind, onChange, onCancel, onSave }) {
         </Stack>
 
         <FormControlLabel
-          sx={{ '& .MuiFormControlLabel-label': { fontSize: 12, color: '#374151' } }}
+          sx={{
+            px: 0.75,
+            py: 0.35,
+            borderRadius: '8px',
+            backgroundColor: '#F8FAFC',
+            border: '1px solid #EEF2F7',
+            '& .MuiFormControlLabel-label': { fontSize: 12, color: '#374151' }
+          }}
           control={
             <Checkbox
               size="small"
@@ -211,7 +232,18 @@ function BaseForm({ baseForm, editingKind, onChange, onCancel, onSave }) {
 
         <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
           <Button size="small" variant="outlined" color="inherit" onClick={onCancel}>Отмена</Button>
-          <Button size="small" variant="contained" sx={{ backgroundColor: '#22C55E', '&:hover': { backgroundColor: '#16A34A' } }} onClick={onSave}>Сохранить</Button>
+          <Button
+            size="small"
+            variant="contained"
+            sx={{
+              backgroundColor: '#22C55E',
+              boxShadow: '0px 6px 12px rgba(34, 197, 94, 0.24)',
+              '&:hover': { backgroundColor: '#16A34A' }
+            }}
+            onClick={onSave}
+          >
+            Сохранить
+          </Button>
         </Stack>
       </Stack>
     </Paper>
@@ -222,9 +254,14 @@ function SpecialForm({ specialForm, editingKind, onChange, onCancel, onSave }) {
   return (
     <Paper elevation={0} sx={panelSx}>
       <Stack spacing={1}>
-        <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
-          {editingKind === 'special' ? 'Редактирование' : 'Создание'} специального расписания
-        </Typography>
+        <Stack spacing={0.35}>
+          <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#F59E0B', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            Специальный режим
+          </Typography>
+          <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
+            {editingKind === 'special' ? 'Редактирование' : 'Создание'} специального расписания
+          </Typography>
+        </Stack>
         <TextField label="Заголовок" size="small" value={specialForm.title} onChange={(e) => onChange({ title: e.target.value })} />
 
         <Stack direction="row" spacing={0.75}>
@@ -247,7 +284,18 @@ function SpecialForm({ specialForm, editingKind, onChange, onCancel, onSave }) {
 
         <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
           <Button size="small" variant="outlined" color="inherit" onClick={onCancel}>Отмена</Button>
-          <Button size="small" variant="contained" sx={{ backgroundColor: '#22C55E', '&:hover': { backgroundColor: '#16A34A' } }} onClick={onSave}>Сохранить</Button>
+          <Button
+            size="small"
+            variant="contained"
+            sx={{
+              backgroundColor: '#22C55E',
+              boxShadow: '0px 6px 12px rgba(34, 197, 94, 0.24)',
+              '&:hover': { backgroundColor: '#16A34A' }
+            }}
+            onClick={onSave}
+          >
+            Сохранить
+          </Button>
         </Stack>
       </Stack>
     </Paper>
@@ -260,13 +308,27 @@ function BaseCards({ baseSchedules, onEdit, onDelete }) {
   return (
     <Paper elevation={0} sx={panelSx}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.75}>
-        <Typography sx={sectionTitleSx}>Основное расписание</Typography>
-        <FormControlLabel control={<Checkbox size="small" />} label={<Typography sx={{ fontSize: 11 }}>Выбрать все</Typography>} />
+        <Stack direction="row" spacing={0.5} alignItems="center">
+          <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#22C55E' }} />
+          <Typography sx={sectionTitleSx}>Основное расписание</Typography>
+        </Stack>
+        <FormControlLabel
+          control={
+            <Checkbox
+              size="small"
+              sx={{
+                color: '#D1D5DB',
+                '&.Mui-checked': { color: '#22C55E' }
+              }}
+            />
+          }
+          label={<Typography sx={{ fontSize: 10, color: '#6B7280' }}>Выбрать все</Typography>}
+        />
       </Stack>
       <Stack spacing={0.75}>
         {baseSchedules.map((item) => (
-          <Card key={item.id} variant="outlined" sx={{ borderRadius: '10px', borderColor: '#E5E7EB', position: 'relative' }}>
-            <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '10px 0 0 10px', backgroundColor: '#22C55E' }} />
+          <Card key={item.id} variant="outlined" sx={{ ...cardSx, position: 'relative' }}>
+            <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '12px 0 0 12px', backgroundColor: '#22C55E' }} />
             <CardContent sx={{ px: 1.25, py: 0.9, '&:last-child': { pb: 0.9 } }}>
               <Typography sx={{ fontWeight: 700, fontSize: 12 }}>{item.title}</Typography>
               <Typography sx={{ fontSize: 11, color: '#64748B' }}>{formatDate(item.validFrom)} — {formatDate(item.validTo)}</Typography>
@@ -278,7 +340,7 @@ function BaseCards({ baseSchedules, onEdit, onDelete }) {
               </Stack>
             </CardContent>
             <CardActions sx={{ px: 1.25, py: 0.5 }}>
-              <Button size="small" startIcon={<EditOutlined fontSize="small" />} onClick={() => onEdit(item)}>Изменить</Button>
+              <Button size="small" startIcon={<EditOutlined fontSize="small" />} onClick={() => onEdit(item)} sx={{ color: '#16A34A' }}>Изменить</Button>
               <Button size="small" color="error" startIcon={<DeleteOutline fontSize="small" />} onClick={() => onDelete(item.id)}>Удалить</Button>
             </CardActions>
           </Card>
@@ -293,7 +355,10 @@ function SpecialCards({ specialSchedules, onEdit, onDelete }) {
 
   return (
     <Paper elevation={0} sx={panelSx}>
-      <Typography sx={{ ...sectionTitleSx, mb: 0.75 }}>Специальное расписание</Typography>
+      <Stack direction="row" spacing={0.5} alignItems="center" mb={0.75}>
+        <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#F59E0B' }} />
+        <Typography sx={sectionTitleSx}>Специальное расписание</Typography>
+      </Stack>
       <Stack spacing={0.75}>
         {specialSchedules.map((item) => {
           const from = new Date(item.dateFrom);
@@ -301,8 +366,8 @@ function SpecialCards({ specialSchedules, onEdit, onDelete }) {
           const days = Math.max(1, Math.ceil((to - from) / 86400000) + 1);
 
           return (
-            <Card key={item.id} variant="outlined" sx={{ borderRadius: '10px', borderColor: '#E5E7EB', position: 'relative' }}>
-              <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '10px 0 0 10px', backgroundColor: '#F59E0B' }} />
+            <Card key={item.id} variant="outlined" sx={{ ...cardSx, position: 'relative' }}>
+              <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, borderRadius: '12px 0 0 12px', backgroundColor: '#F59E0B' }} />
               <CardContent sx={{ px: 1.25, py: 0.9, '&:last-child': { pb: 0.9 } }}>
                 <Typography sx={{ fontWeight: 700, fontSize: 12 }}>{item.title}</Typography>
                 <Typography sx={{ fontSize: 11, color: '#64748B' }}>{formatDate(item.dateFrom)} — {formatDate(item.dateTo)}</Typography>
@@ -311,7 +376,7 @@ function SpecialCards({ specialSchedules, onEdit, onDelete }) {
                 <Typography sx={{ fontSize: 11, color: '#9CA3AF' }}>Причина: {item.reason || 'Ручная настройка'}</Typography>
               </CardContent>
               <CardActions sx={{ px: 1.25, py: 0.5 }}>
-                <Button size="small" startIcon={<EditOutlined fontSize="small" />} onClick={() => onEdit(item)}>Изменить</Button>
+                <Button size="small" startIcon={<EditOutlined fontSize="small" />} onClick={() => onEdit(item)} sx={{ color: '#D97706' }}>Изменить</Button>
                 <Button size="small" color="error" startIcon={<DeleteOutline fontSize="small" />} onClick={() => onDelete(item.id)}>Удалить</Button>
               </CardActions>
             </Card>
@@ -348,13 +413,33 @@ export function ScheduleSidebar({
 }) {
   return (
     <Stack spacing={1}>
-      {notice && <Alert icon={false} severity="success" sx={{ py: 0.25, '& .MuiAlert-message': { fontSize: 11, fontWeight: 700 } }}>{notice}</Alert>}
+      {notice && (
+        <Alert
+          icon={false}
+          severity="success"
+          sx={{
+            py: 0.4,
+            borderRadius: '10px',
+            border: '1px solid #D1FAE5',
+            backgroundColor: '#ECFDF3',
+            '& .MuiAlert-message': { fontSize: 11, fontWeight: 700, color: '#065F46' }
+          }}
+        >
+          {notice}
+        </Alert>
+      )}
 
       {hasConflicts && (
         <Alert
           icon={<WarningAmberRounded fontSize="small" />}
           severity="error"
-          sx={{ py: 0.25, '& .MuiAlert-message': { fontSize: 11 } }}
+          sx={{
+            py: 0.35,
+            borderRadius: '10px',
+            border: '1px solid #FECACA',
+            backgroundColor: '#FEF2F2',
+            '& .MuiAlert-message': { fontSize: 11 }
+          }}
         >
           Найдены пересекающиеся специальные интервалы с одинаковым приоритетом.
         </Alert>
@@ -363,13 +448,20 @@ export function ScheduleSidebar({
       {!hasAnySchedules && panelMode === 'none' && (
         <Paper elevation={0} sx={panelSx}>
           <Stack spacing={1}>
-            <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#F97316', textTransform: 'uppercase' }}>Режим работы не настроен</Typography>
+            <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#F97316', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Режим работы не настроен</Typography>
             <Typography sx={{ fontSize: 11, color: '#6B7280' }}>Добавьте расписание вручную или загрузите готовый шаблон.</Typography>
             <Button
               variant="contained"
               size="small"
               startIcon={<AddRounded fontSize="small" />}
-              sx={{ alignSelf: 'flex-start', fontSize: 10, py: 0.5, px: 1.2, backgroundColor: '#22C55E' }}
+              sx={{
+                alignSelf: 'flex-start',
+                fontSize: 10,
+                py: 0.5,
+                px: 1.2,
+                backgroundColor: '#22C55E',
+                boxShadow: '0px 6px 12px rgba(34, 197, 94, 0.24)'
+              }}
               onClick={onStartCreateBase}
             >
               Создать вручную
@@ -380,11 +472,22 @@ export function ScheduleSidebar({
 
       {hasAnySchedules && panelMode === 'none' && (
         <Paper elevation={0} sx={panelSx}>
-          <Stack direction="row" spacing={0.5} alignItems="center">
-            <Button variant="contained" size="small" startIcon={<AddRounded fontSize="small" />} sx={{ fontSize: 10, backgroundColor: '#22C55E', px: 1.1 }} onClick={onStartCreateBase}>
+          <Stack direction="row" spacing={0.75} alignItems="center">
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AddRounded fontSize="small" />}
+              sx={{
+                fontSize: 10,
+                backgroundColor: '#22C55E',
+                px: 1.2,
+                boxShadow: '0px 6px 12px rgba(34, 197, 94, 0.24)'
+              }}
+              onClick={onStartCreateBase}
+            >
               Создать
             </Button>
-            <Button variant="outlined" size="small" sx={{ fontSize: 10, px: 1.1 }} onClick={onStartCreateSpecial}>
+            <Button variant="outlined" size="small" sx={{ fontSize: 10, px: 1.2, borderColor: '#A7F3D0', color: '#059669' }} onClick={onStartCreateSpecial}>
               Создать +
             </Button>
             <Button size="small" sx={{ fontSize: 10, ml: 'auto' }} color="error" onClick={onClearAll}>

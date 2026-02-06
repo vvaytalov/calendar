@@ -8,7 +8,7 @@ const COLORS = {
   weekday: '#22C55E',
   weekend: '#16A34A',
   special: '#F59E0B',
-  border: '#E5E7EB',
+  border: '#E6E8EC',
   surface: '#FFFFFF'
 };
 
@@ -36,15 +36,6 @@ function getMonthCells(year, monthIndex) {
   return cells;
 }
 
-function LegendItem({ color, label }) {
-  return (
-    <Stack direction="row" spacing={0.5} alignItems="center">
-      <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: color }} />
-      <Typography sx={{ fontSize: 10, color: '#6B7280' }}>{label}</Typography>
-    </Stack>
-  );
-}
-
 function toDateKey(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -59,13 +50,22 @@ export function YearCalendar({ baseSchedules, specialSchedules, onChangeMode }) 
     <Stack spacing={1}>
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Stack direction="row" spacing={1.25} alignItems="center">
-          <Typography sx={{ fontSize: 10, color: '#A3AAB8' }}>{year - 1}</Typography>
-          <Typography sx={{ fontSize: 10, color: '#22C55E', fontWeight: 700 }}>{year}</Typography>
+          <Typography sx={{ fontSize: 10, color: '#94A3B8' }}>{year - 1}</Typography>
+          <Typography sx={{ fontSize: 11, color: '#16A34A', fontWeight: 700 }}>{year}</Typography>
         </Stack>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <LegendItem color={COLORS.weekday} label="Будни" />
-          <LegendItem color={COLORS.weekend} label="Выходные" />
-          <LegendItem color={COLORS.special} label="Специальные" />
+        <Stack direction="row" spacing={0.75} alignItems="center">
+          <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.35, borderRadius: '999px', backgroundColor: '#ECFDF3', border: '1px solid #D1FAE5' }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: COLORS.weekday }} />
+            <Typography sx={{ fontSize: 9.5, color: '#065F46', fontWeight: 600 }}>Будни</Typography>
+          </Box>
+          <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.35, borderRadius: '999px', backgroundColor: '#ECFDF3', border: '1px solid #D1FAE5' }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: COLORS.weekend }} />
+            <Typography sx={{ fontSize: 9.5, color: '#065F46', fontWeight: 600 }}>Выходные</Typography>
+          </Box>
+          <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, px: 0.75, py: 0.35, borderRadius: '999px', backgroundColor: '#FFFBEB', border: '1px solid #FDE68A' }}>
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: COLORS.special }} />
+            <Typography sx={{ fontSize: 9.5, color: '#92400E', fontWeight: 600 }}>Специальные</Typography>
+          </Box>
         </Stack>
       </Stack>
 
@@ -79,11 +79,12 @@ export function YearCalendar({ baseSchedules, specialSchedules, onChangeMode }) 
                 elevation={0}
                 sx={{
                   px: 1,
-                  py: 0.75,
-                  borderRadius: '8px',
+                  py: 0.85,
+                  borderRadius: '12px',
                   border: `1px solid ${COLORS.border}`,
                   backgroundColor: COLORS.surface,
-                  minHeight: 132
+                  minHeight: 140,
+                  boxShadow: '0px 10px 18px rgba(15, 23, 42, 0.04)'
                 }}
               >
                 <Typography sx={{ fontSize: 10, fontWeight: 700, lineHeight: '14px', mb: 0.5, textAlign: 'center' }}>{month}</Typography>
@@ -91,7 +92,7 @@ export function YearCalendar({ baseSchedules, specialSchedules, onChangeMode }) 
                 <Grid container columns={7} mb={0.25}>
                   {WEEKDAYS.map((d) => (
                     <Grid item xs={1} key={`${month}-h-${d}`}>
-                      <Typography sx={{ fontSize: 8.5, color: '#98A2B3', textAlign: 'center' }}>{d}</Typography>
+                      <Typography sx={{ fontSize: 8.5, color: '#94A3B8', textAlign: 'center' }}>{d}</Typography>
                     </Grid>
                   ))}
                 </Grid>
@@ -115,7 +116,7 @@ export function YearCalendar({ baseSchedules, specialSchedules, onChangeMode }) 
                           }}
                           sx={{
                             position: 'relative',
-                            height: 22,
+                            height: 24,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center'
@@ -171,8 +172,8 @@ export function YearCalendar({ baseSchedules, specialSchedules, onChangeMode }) 
                           )}
                           <Box
                             sx={{
-                              width: 18,
-                              height: 18,
+                              width: 20,
+                              height: 20,
                               borderRadius: '50%',
                               display: 'flex',
                               flexDirection: 'column',
