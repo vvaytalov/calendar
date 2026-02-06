@@ -1,6 +1,7 @@
 # calendar — zone24 schedule manager
 
 Рабочий пример MVC-приложения для ведения расписания объекта охраны `zone24`:
+
 - **View**: React + **MUI** UI
 - **Controller/ViewModel**: MobX store
 - **Model**: `ScheduleModel`

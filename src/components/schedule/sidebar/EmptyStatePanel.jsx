@@ -6,8 +6,20 @@ export function EmptyStatePanel({ onCreate }) {
   return (
     <Paper elevation={0} sx={panelSx}>
       <Stack spacing={1}>
-        <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#F97316', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Режим работы не настроен</Typography>
-        <Typography sx={{ fontSize: 11, color: '#6B7280' }}>Добавьте расписание вручную или загрузите готовый шаблон.</Typography>
+        <Typography
+          sx={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: '#F97316',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em'
+          }}
+        >
+          Режим работы не настроен
+        </Typography>
+        <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
+          Добавьте расписание вручную или загрузите готовый шаблон.
+        </Typography>
         <Button
           variant="contained"
           size="small"

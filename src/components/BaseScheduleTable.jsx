@@ -1,14 +1,14 @@
 import {
-  Button,
-  Chip,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
   TableContainer,
+  Table,
   TableHead,
+  TableBody,
   TableRow,
-  Paper
+  TableCell,
+  Paper,
+  Stack,
+  Chip,
+  Button
 } from '@mui/material';
 
 const dayLabels = {
@@ -37,7 +37,9 @@ export function BaseScheduleTable({ items, onEdit, onDelete }) {
           {items.map((item) => (
             <TableRow key={item.id} hover>
               <TableCell>{item.title}</TableCell>
-              <TableCell>{item.timeFrom} - {item.timeTo}</TableCell>
+              <TableCell>
+                {item.timeFrom} - {item.timeTo}
+              </TableCell>
               <TableCell>
                 <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
                   {item.daysOfWeek.map((day) => (
@@ -50,7 +52,12 @@ export function BaseScheduleTable({ items, onEdit, onDelete }) {
                   <Button size="small" variant="outlined" onClick={() => onEdit(item)}>
                     Редактировать
                   </Button>
-                  <Button size="small" color="error" variant="contained" onClick={() => onDelete(item.id)}>
+                  <Button
+                    size="small"
+                    color="error"
+                    variant="contained"
+                    onClick={() => onDelete(item.id)}
+                  >
                     Удалить
                   </Button>
                 </Stack>

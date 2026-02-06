@@ -91,15 +91,23 @@ export class SchedulePageStore {
   }
 
   toggleWeekdayDay(day) {
-    this.baseForm = { ...this.baseForm, weekdayDays: this.toggleDay(this.baseForm.weekdayDays, day) };
+    this.baseForm = {
+      ...this.baseForm,
+      weekdayDays: this.toggleDay(this.baseForm.weekdayDays, day)
+    };
   }
 
   toggleWeekendDay(day) {
-    this.baseForm = { ...this.baseForm, weekendDays: this.toggleDay(this.baseForm.weekendDays, day) };
+    this.baseForm = {
+      ...this.baseForm,
+      weekendDays: this.toggleDay(this.baseForm.weekendDays, day)
+    };
   }
 
   toggleDay(list, day) {
-    return list.includes(day) ? list.filter((item) => item !== day) : [...list, day].sort((a, b) => a - b);
+    return list.includes(day)
+      ? list.filter((item) => item !== day)
+      : [...list, day].sort((a, b) => a - b);
   }
 
   resetEditing() {
@@ -132,7 +140,8 @@ export class SchedulePageStore {
 
   findBaseByDays(days) {
     return this.dataStore.baseSchedules.find(
-      (item) => item.daysOfWeek.length === days.length && days.every((d) => item.daysOfWeek.includes(d))
+      (item) =>
+        item.daysOfWeek.length === days.length && days.every((d) => item.daysOfWeek.includes(d))
     );
   }
 
@@ -194,15 +203,19 @@ export class SchedulePageStore {
 
     const weekendPayload = {
       title: this.baseForm.weekendTitle,
-      timeFrom: this.baseForm.sameAsWeekdays ? this.baseForm.weekdayTimeFrom : this.baseForm.weekendTimeFrom,
-      timeTo: this.baseForm.sameAsWeekdays ? this.baseForm.weekdayTimeTo : this.baseForm.weekendTimeTo,
+      timeFrom: this.baseForm.sameAsWeekdays
+        ? this.baseForm.weekdayTimeFrom
+        : this.baseForm.weekendTimeFrom,
+      timeTo: this.baseForm.sameAsWeekdays
+        ? this.baseForm.weekdayTimeTo
+        : this.baseForm.weekendTimeTo,
       daysOfWeek: this.baseForm.weekendDays,
       validFrom: this.baseForm.sameAsWeekdays
         ? this.baseForm.weekdayFrom
-        : (this.baseForm.weekendFrom || this.baseForm.weekdayFrom),
+        : this.baseForm.weekendFrom || this.baseForm.weekdayFrom,
       validTo: this.baseForm.sameAsWeekdays
         ? this.baseForm.weekdayTo
-        : (this.baseForm.weekendTo || this.baseForm.weekdayTo)
+        : this.baseForm.weekendTo || this.baseForm.weekdayTo
     };
 
     if (this.editing?.kind === 'base') {
@@ -241,7 +254,9 @@ export class SchedulePageStore {
   async saveSpecial() {
     const payload = {
       title: this.specialForm.title,
-      dateFrom: new Date(`${this.specialForm.dateFrom}T${this.specialForm.timeFrom}:00`).toISOString(),
+      dateFrom: new Date(
+        `${this.specialForm.dateFrom}T${this.specialForm.timeFrom}:00`
+      ).toISOString(),
       dateTo: new Date(`${this.specialForm.dateTo}T${this.specialForm.timeTo}:00`).toISOString(),
       priority: 100,
       reason: 'Ð ÑƒÑ‡Ð½Ð°Ñ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ°',
@@ -290,7 +305,8 @@ export class SchedulePageStore {
   deleteBase(id) {
     this.requestConfirm({
       title: 'Ð£Ð´Ð°Ð»Ð¸Ñ‚ÑŒ Ñ€Ð°ÑÐ¿Ð¸ÑÐ°Ð½Ð¸Ðµ?',
-      description: 'Ð—Ð°Ð¿Ð¸ÑÑŒ Ð±ÑƒÐ´ÐµÑ‚ ÑƒÐ´Ð°Ð»ÐµÐ½Ð° Ð±ÐµÐ· Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ÑÑ‚Ð¸ Ð²Ð¾ÑÑÑ‚Ð°Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ.',
+      description:
+        'Ð—Ð°Ð¿Ð¸ÑÑŒ Ð±ÑƒÐ´ÐµÑ‚ ÑƒÐ´Ð°Ð»ÐµÐ½Ð° Ð±ÐµÐ· Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ÑÑ‚Ð¸ Ð²Ð¾ÑÑÑ‚Ð°Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ.',
       onConfirm: async () => {
         await this.dataStore.removeBase(id);
         runInAction(() => {
@@ -303,7 +319,8 @@ export class SchedulePageStore {
   deleteSpecial(id) {
     this.requestConfirm({
       title: 'Ð£Ð´Ð°Ð»Ð¸Ñ‚ÑŒ Ñ€Ð°ÑÐ¿Ð¸ÑÐ°Ð½Ð¸Ðµ?',
-      description: 'Ð—Ð°Ð¿Ð¸ÑÑŒ Ð±ÑƒÐ´ÐµÑ‚ ÑƒÐ´Ð°Ð»ÐµÐ½Ð° Ð±ÐµÐ· Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ÑÑ‚Ð¸ Ð²Ð¾ÑÑÑ‚Ð°Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ.',
+      description:
+        'Ð—Ð°Ð¿Ð¸ÑÑŒ Ð±ÑƒÐ´ÐµÑ‚ ÑƒÐ´Ð°Ð»ÐµÐ½Ð° Ð±ÐµÐ· Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ÑÑ‚Ð¸ Ð²Ð¾ÑÑÑ‚Ð°Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ.',
       onConfirm: async () => {
         await this.dataStore.removeSpecial(id);
         runInAction(() => {
@@ -316,7 +333,8 @@ export class SchedulePageStore {
   clearAll() {
     this.requestConfirm({
       title: 'Ð£Ð´Ð°Ð»Ð¸Ñ‚ÑŒ Ð²ÑÐµ Ñ€Ð°ÑÐ¿Ð¸ÑÐ°Ð½Ð¸Ñ?',
-      description: 'Ð‘ÑƒÐ´ÑƒÑ‚ ÑƒÐ´Ð°Ð»ÐµÐ½Ñ‹ Ð²ÑÐµ Ð±Ð°Ð·Ð¾Ð²Ñ‹Ðµ Ð¸ ÑÐ¿ÐµÑ†Ð¸Ð°Ð»ÑŒÐ½Ñ‹Ðµ Ð¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð»Ñ‹.',
+      description:
+        'Ð‘ÑƒÐ´ÑƒÑ‚ ÑƒÐ´Ð°Ð»ÐµÐ½Ñ‹ Ð²ÑÐµ Ð±Ð°Ð·Ð¾Ð²Ñ‹Ðµ Ð¸ ÑÐ¿ÐµÑ†Ð¸Ð°Ð»ÑŒÐ½Ñ‹Ðµ Ð¸Ð½Ñ‚ÐµÑ€Ð²Ð°Ð»Ñ‹.',
       confirmLabel: 'Ð£Ð´Ð°Ð»Ð¸Ñ‚ÑŒ Ð²ÑÐµ',
       onConfirm: async () => {
         await this.dataStore.clearAll();

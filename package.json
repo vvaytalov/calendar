@@ -8,7 +8,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server/server.js",
-    "lint": "node --check server/server.js"
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -24,7 +26,17 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@vitejs/plugin-react": "^4.3.1",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "globals": "^17.3.0",
+    "prettier": "^3.8.1",
     "vite": "^5.4.0"
   }
 }

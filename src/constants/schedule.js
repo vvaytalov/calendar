@@ -61,4 +61,3 @@ export const SPECIAL_FORM_TEMPLATE = {
   timeTo: '18:00',
   recurrence: 'none'
 };
-

@@ -29,7 +29,8 @@ export function SpecialScheduleTable({ items, onEdit, onDelete }) {
             <TableRow key={item.id} hover>
               <TableCell>{item.title}</TableCell>
               <TableCell>
-                {new Date(item.dateFrom).toLocaleString()} - {new Date(item.dateTo).toLocaleString()}
+                {new Date(item.dateFrom).toLocaleString()} -{' '}
+                {new Date(item.dateTo).toLocaleString()}
               </TableCell>
               <TableCell>{item.priority}</TableCell>
               <TableCell>
@@ -44,7 +45,12 @@ export function SpecialScheduleTable({ items, onEdit, onDelete }) {
                   <Button size="small" variant="outlined" onClick={() => onEdit(item)}>
                     Редактировать
                   </Button>
-                  <Button size="small" color="error" variant="contained" onClick={() => onDelete(item.id)}>
+                  <Button
+                    size="small"
+                    color="error"
+                    variant="contained"
+                    onClick={() => onDelete(item.id)}
+                  >
                     Удалить
                   </Button>
                 </Stack>

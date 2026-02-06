@@ -77,7 +77,11 @@ export const ScheduleSidebar = observer(({ store }) => {
       )}
 
       <BaseCards items={store.baseCards} onEdit={store.editBaseById} onDelete={store.deleteBase} />
-      <SpecialCards items={store.specialCards} onEdit={store.editSpecialById} onDelete={store.deleteSpecial} />
+      <SpecialCards
+        items={store.specialCards}
+        onEdit={store.editSpecialById}
+        onDelete={store.deleteSpecial}
+      />
 
       {store.loading && (
         <Stack direction="row" spacing={1} alignItems="center">

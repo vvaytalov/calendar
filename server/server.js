@@ -18,7 +18,8 @@ const validateBase = (payload) => {
   if (!payload.title?.trim()) return 'Название обязательно';
   if (!payload.timeFrom || !payload.timeTo) return 'Укажите время начала и окончания';
   if (payload.timeFrom >= payload.timeTo) return 'timeFrom должен быть меньше timeTo';
-  if (!Array.isArray(payload.daysOfWeek) || payload.daysOfWeek.length === 0) return 'Выберите дни недели';
+  if (!Array.isArray(payload.daysOfWeek) || payload.daysOfWeek.length === 0)
+    return 'Выберите дни недели';
   return null;
 };
 
@@ -77,7 +78,8 @@ app.put('/api/zones/:zone/base-schedules/:id', (req, res) => {
 app.delete('/api/zones/:zone/base-schedules/:id', (req, res) => {
   const before = baseSchedules.length;
   baseSchedules = baseSchedules.filter((item) => item.id !== req.params.id);
-  if (baseSchedules.length === before) return res.status(404).json({ message: 'Запись не найдена' });
+  if (baseSchedules.length === before)
+    return res.status(404).json({ message: 'Запись не найдена' });
   res.status(204).send();
 });
 
@@ -113,7 +115,8 @@ app.put('/api/zones/:zone/special-schedules/:id', (req, res) => {
 app.delete('/api/zones/:zone/special-schedules/:id', (req, res) => {
   const before = specialSchedules.length;
   specialSchedules = specialSchedules.filter((item) => item.id !== req.params.id);
-  if (specialSchedules.length === before) return res.status(404).json({ message: 'Запись не найдена' });
+  if (specialSchedules.length === before)
+    return res.status(404).json({ message: 'Запись не найдена' });
   res.status(204).send();
 });
 

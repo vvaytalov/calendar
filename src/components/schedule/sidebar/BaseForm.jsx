@@ -27,7 +27,15 @@ export function BaseForm({
     <Paper elevation={0} sx={panelSx}>
       <Stack spacing={1}>
         <Stack spacing={0.35}>
-          <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#22C55E', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <Typography
+            sx={{
+              fontSize: 10,
+              fontWeight: 700,
+              color: '#22C55E',
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em'
+            }}
+          >
             Настройка режима
           </Typography>
           <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>
@@ -36,7 +44,9 @@ export function BaseForm({
         </Stack>
 
         <Stack spacing={0.5}>
-          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>Тип расписания</Typography>
+          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>
+            Тип расписания
+          </Typography>
           <FormControl size="small">
             <InputLabel>Тип расписания</InputLabel>
             <Select
@@ -122,7 +132,11 @@ export function BaseForm({
 
         <FormControl size="small">
           <InputLabel>Повторяемость</InputLabel>
-          <Select value={baseForm.recurrence} label="Повторяемость" onChange={(e) => onChange({ recurrence: e.target.value })}>
+          <Select
+            value={baseForm.recurrence}
+            label="Повторяемость"
+            onChange={(e) => onChange({ recurrence: e.target.value })}
+          >
             <MenuItem value="yearly">Каждый год</MenuItem>
             <MenuItem value="none">Отсутствует</MenuItem>
           </Select>
@@ -131,7 +145,9 @@ export function BaseForm({
         {!baseForm.sameAsWeekdays && (
           <>
             <Divider />
-            <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>Выходные дни</Typography>
+            <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>
+              Выходные дни
+            </Typography>
 
             <Stack spacing={0.5}>
               <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>Часы</Typography>
@@ -161,7 +177,11 @@ export function BaseForm({
 
             <FormControl size="small">
               <InputLabel>Повторяемость</InputLabel>
-              <Select value={baseForm.recurrence} label="Повторяемость" onChange={(e) => onChange({ recurrence: e.target.value })}>
+              <Select
+                value={baseForm.recurrence}
+                label="Повторяемость"
+                onChange={(e) => onChange({ recurrence: e.target.value })}
+              >
                 <MenuItem value="yearly">Каждый год</MenuItem>
                 <MenuItem value="none">Отсутствует</MenuItem>
               </Select>
@@ -170,7 +190,9 @@ export function BaseForm({
         )}
 
         <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
-          <Button size="small" variant="outlined" color="inherit" onClick={onCancel}>Отмена</Button>
+          <Button size="small" variant="outlined" color="inherit" onClick={onCancel}>
+            Отмена
+          </Button>
           <Button
             size="small"
             variant="contained"

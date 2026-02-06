@@ -20,7 +20,12 @@ export function ToolbarPanel({ onCreateBase, onCreateSpecial, onClearAll }) {
         >
           Создать
         </Button>
-        <Button variant="outlined" size="small" sx={{ fontSize: 10, px: 1.2, borderColor: '#A7F3D0', color: '#059669' }} onClick={onCreateSpecial}>
+        <Button
+          variant="outlined"
+          size="small"
+          sx={{ fontSize: 10, px: 1.2, borderColor: '#A7F3D0', color: '#059669' }}
+          onClick={onCreateSpecial}
+        >
           Создать +
         </Button>
         <Button size="small" sx={{ fontSize: 10, ml: 'auto' }} color="error" onClick={onClearAll}>

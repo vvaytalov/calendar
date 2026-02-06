@@ -91,7 +91,11 @@ export class CalendarViewStore {
       };
     }
 
-    const status = this.resolveDayStatus(cell, this.dataStore.baseSchedules, this.dataStore.specialSchedules);
+    const status = this.resolveDayStatus(
+      cell,
+      this.dataStore.baseSchedules,
+      this.dataStore.specialSchedules
+    );
     const isActive = status !== 'none';
     const color =
       status === 'special'

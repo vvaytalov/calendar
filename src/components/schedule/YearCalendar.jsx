@@ -11,7 +11,9 @@ export const YearCalendar = observer(({ store }) => {
       <Stack direction="row" justifyContent="space-between" alignItems="center">
         <Stack direction="row" spacing={1.25} alignItems="center">
           <Typography sx={{ fontSize: 10, color: '#94A3B8' }}>{calendarStore.year - 1}</Typography>
-          <Typography sx={{ fontSize: 11, color: '#16A34A', fontWeight: 700 }}>{calendarStore.year}</Typography>
+          <Typography sx={{ fontSize: 11, color: '#16A34A', fontWeight: 700 }}>
+            {calendarStore.year}
+          </Typography>
         </Stack>
         <CalendarLegend items={calendarStore.legendItems} />
       </Stack>

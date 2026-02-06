@@ -18,7 +18,9 @@ export function CalendarLegend({ items }) {
           }}
         >
           <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: item.color }} />
-          <Typography sx={{ fontSize: 9.5, color: item.text, fontWeight: 600 }}>{item.label}</Typography>
+          <Typography sx={{ fontSize: 9.5, color: item.text, fontWeight: 600 }}>
+            {item.label}
+          </Typography>
         </Box>
       ))}
     </Stack>

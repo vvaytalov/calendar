@@ -17,14 +17,18 @@ export function CalendarMonth({ month, onHoverCell, onLeaveCell, onChangeMode })
           boxShadow: '0px 10px 18px rgba(15, 23, 42, 0.04)'
         }}
       >
-        <Typography sx={{ fontSize: 10, fontWeight: 700, lineHeight: '14px', mb: 0.5, textAlign: 'center' }}>
+        <Typography
+          sx={{ fontSize: 10, fontWeight: 700, lineHeight: '14px', mb: 0.5, textAlign: 'center' }}
+        >
           {month.label}
         </Typography>
 
         <Grid container columns={7} mb={0.25}>
           {month.weekdays.map((day) => (
             <Grid item xs={1} key={`${month.key}-h-${day}`}>
-              <Typography sx={{ fontSize: 8.5, color: '#94A3B8', textAlign: 'center' }}>{day}</Typography>
+              <Typography sx={{ fontSize: 8.5, color: '#94A3B8', textAlign: 'center' }}>
+                {day}
+              </Typography>
             </Grid>
           ))}
         </Grid>

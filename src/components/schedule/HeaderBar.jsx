@@ -1,6 +1,11 @@
 import { Box, Button, Stack, Typography } from '@mui/material';
 
-const navItems = ['ÐŸÐŸÐš', 'ÐžÑ‚Ð²ÐµÑ‚ÑÑ‚Ð²ÐµÐ½Ð½Ñ‹Ðµ Ð»Ð¸Ñ†Ð°', 'ÐšÐ¾Ð½Ñ‚Ð°ÐºÑ‚Ñ‹', 'Ð ÐµÐ¶Ð¸Ð¼ Ñ€Ð°Ð±Ð¾Ñ‚Ñ‹'];
+const navItems = [
+  'ÐŸÐŸÐš',
+  'ÐžÑ‚Ð²ÐµÑ‚ÑÑ‚Ð²ÐµÐ½Ð½Ñ‹Ðµ Ð»Ð¸Ñ†Ð°',
+  'ÐšÐ¾Ð½Ñ‚Ð°ÐºÑ‚Ñ‹',
+  'Ð ÐµÐ¶Ð¸Ð¼ Ñ€Ð°Ð±Ð¾Ñ‚Ñ‹'
+];
 
 export function HeaderBar({ canSubmit }) {
   return (
