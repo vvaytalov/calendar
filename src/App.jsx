@@ -10,6 +10,7 @@ import { ScheduleSidebar } from './components/schedule/ScheduleSidebar';
 
 const storeFactory = () => new ZoneScheduleStore(new ScheduleService());
 
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
 function TopLine() {
   return (
     <Stack direction="row" spacing={2} alignItems="center" sx={{ py: 0.25, borderBottom: '1px solid #EEF2F7' }}>
@@ -21,6 +22,8 @@ function TopLine() {
   );
 }
 
+=======
+>>>>>>> main
 const App = observer(() => {
   const store = useMemo(storeFactory, []);
   const [panelMode, setPanelMode] = useState('none');
@@ -48,7 +51,11 @@ const App = observer(() => {
       title: baseForm.weekdayTitle,
       timeFrom: baseForm.weekdayTimeFrom,
       timeTo: baseForm.weekdayTimeTo,
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
       daysOfWeek: baseForm.weekdayDays,
+=======
+      daysOfWeek: [1, 2, 3, 4, 5],
+>>>>>>> main
       validFrom: baseForm.weekdayFrom,
       validTo: baseForm.weekdayTo
     };
@@ -57,7 +64,11 @@ const App = observer(() => {
       title: baseForm.weekendTitle,
       timeFrom: baseForm.sameAsWeekdays ? baseForm.weekdayTimeFrom : baseForm.weekendTimeFrom,
       timeTo: baseForm.sameAsWeekdays ? baseForm.weekdayTimeTo : baseForm.weekendTimeTo,
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
       daysOfWeek: baseForm.sameAsWeekdays ? baseForm.weekdayDays : baseForm.weekendDays,
+=======
+      daysOfWeek: [6, 7],
+>>>>>>> main
       validFrom: baseForm.sameAsWeekdays ? baseForm.weekdayFrom : baseForm.weekendFrom,
       validTo: baseForm.sameAsWeekdays ? baseForm.weekdayTo : baseForm.weekendTo
     };
@@ -104,8 +115,12 @@ const App = observer(() => {
       weekdayFrom: toDateInput(item.validFrom),
       weekdayTo: toDateInput(item.validTo),
       weekdayTimeFrom: item.timeFrom,
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
       weekdayTimeTo: item.timeTo,
       weekdayDays: item.daysOfWeek
+=======
+      weekdayTimeTo: item.timeTo
+>>>>>>> main
     }));
     setPanelMode('base-form');
   };
@@ -142,6 +157,7 @@ const App = observer(() => {
   };
 
   return (
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
     <Box sx={{ minHeight: '100vh', py: 1.25, backgroundColor: '#F8FAFC' }}>
       <Container maxWidth="xl" sx={{ px: { xs: 1, md: 1.5 } }}>
         <Stack spacing={1}>
@@ -155,6 +171,21 @@ const App = observer(() => {
                 panelMode={panelMode}
                 hasAnySchedules={hasAnySchedules}
                 notice={notice}
+=======
+    <Box sx={{ minHeight: '100vh', py: 2.5, backgroundColor: '#F5F7FB' }}>
+      <Container maxWidth="xl" sx={{ px: { xs: 1.5, md: 2 } }}>
+        <Stack spacing={1.5}>
+          <Typography sx={{ fontSize: 22, fontWeight: 700, color: "#111827" }}>Календарь зоны 24</Typography>
+
+          {store.error && <Alert severity="error">{store.error}</Alert>}
+          {notice && <Alert severity="success" onClose={() => setNotice('')}>{notice}</Alert>}
+
+          <Grid container spacing={1.5}>
+            <Grid item xs={12} md={4} lg={3}>
+              <ScheduleSidebar
+                panelMode={panelMode}
+                hasAnySchedules={hasAnySchedules}
+>>>>>>> main
                 baseForm={baseForm}
                 specialForm={specialForm}
                 editing={editing}
@@ -182,8 +213,13 @@ const App = observer(() => {
               />
             </Grid>
 
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
             <Grid item xs={12} md={8.7} lg={9.1}>
               <Paper elevation={0} sx={{ p: 1, borderRadius: '8px', border: '1px solid #EBEEF5' }}>
+=======
+            <Grid item xs={12} md={8} lg={9}>
+              <Paper elevation={0} sx={{ p: 1.5, borderRadius: "14px", border: "1px solid #E5E9F2" }}>
+>>>>>>> main
                 <YearCalendar baseSchedules={store.baseSchedules} specialSchedules={store.specialSchedules} />
               </Paper>
             </Grid>
