@@ -1,6 +1,19 @@
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, Box, Container, Grid, Paper, Stack, Typography } from '@mui/material';
+import {
+  Alert,
+  Box,
+  Button,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Paper,
+  Stack,
+  Typography
+} from '@mui/material';
 import { ScheduleService } from './service/scheduleService';
 import { ZoneScheduleStore } from './store/zoneScheduleStore';
 import { BASE_FORM_TEMPLATE, SPECIAL_FORM_TEMPLATE } from './constants/schedule';
@@ -10,13 +23,54 @@ import { ScheduleSidebar } from './components/schedule/ScheduleSidebar';
 
 const storeFactory = () => new ZoneScheduleStore(new ScheduleService());
 
-function TopLine() {
+const navItems = ['ППК', 'Ответственные лица', 'Контакты', 'Режим работы'];
+
+function HeaderBar({ canSubmit }) {
   return (
-    <Stack direction="row" spacing={2} alignItems="center" sx={{ py: 0.25, borderBottom: '1px solid #EEF2F7' }}>
-      <Typography sx={{ fontSize: 10, color: '#64748B' }}>Системный УВД</Typography>
-      <Typography sx={{ fontSize: 10, color: '#64748B' }}>Контроль</Typography>
-      <Typography sx={{ fontSize: 10, color: '#111827', fontWeight: 700 }}>Режим работы</Typography>
-      <Box sx={{ width: 8, height: 8, borderRadius: '50%', border: '1px solid #FCA5A5' }} />
+    <Stack
+      direction={{ xs: 'column', md: 'row' }}
+      alignItems={{ xs: 'flex-start', md: 'center' }}
+      spacing={1}
+      sx={{
+        py: 0.5,
+        borderBottom: '1px solid #E5E7EB'
+      }}
+    >
+      <Stack direction="row" spacing={2} alignItems="center" sx={{ flexWrap: 'wrap' }}>
+        {navItems.map((item, index) => (
+          <Typography
+            key={item}
+            sx={{
+              fontSize: 11,
+              color: item === 'Режим работы' ? '#111827' : '#6B7280',
+              fontWeight: item === 'Режим работы' ? 700 : 500
+            }}
+          >
+            {item}
+          </Typography>
+        ))}
+        <Box sx={{ width: 8, height: 8, borderRadius: '50%', border: '1px solid #FCA5A5' }} />
+      </Stack>
+
+      <Button
+        size="small"
+        variant="outlined"
+        disabled={!canSubmit}
+        sx={{
+          ml: { md: 'auto' },
+          fontSize: 10,
+          px: 1.5,
+          borderRadius: '8px',
+          borderColor: '#86EFAC',
+          color: '#16A34A',
+          '&:hover': {
+            borderColor: '#22C55E',
+            backgroundColor: '#F0FDF4'
+          }
+        }}
+      >
+        Отправить на согласование
+      </Button>
     </Stack>
   );
 }
@@ -28,6 +82,13 @@ const App = observer(() => {
   const [baseForm, setBaseForm] = useState(BASE_FORM_TEMPLATE);
   const [specialForm, setSpecialForm] = useState(SPECIAL_FORM_TEMPLATE);
   const [editing, setEditing] = useState(null);
+  const [confirmState, setConfirmState] = useState({
+    open: false,
+    title: '',
+    description: '',
+    confirmLabel: 'Удалить',
+    onConfirm: null
+  });
 
   useEffect(() => {
     store.load();
@@ -35,7 +96,8 @@ const App = observer(() => {
 
   const hasAnySchedules = store.baseSchedules.length > 0 || store.specialSchedules.length > 0;
 
-  const findBaseByDays = (days) => store.baseSchedules.find((item) => item.daysOfWeek.length === days.length && days.every((d) => item.daysOfWeek.includes(d)));
+  const findBaseByDays = (days) =>
+    store.baseSchedules.find((item) => item.daysOfWeek.length === days.length && days.every((d) => item.daysOfWeek.includes(d)));
 
   const onBaseFormChange = (patch) => setBaseForm((prev) => ({ ...prev, ...patch }));
   const onSpecialFormChange = (patch) => setSpecialForm((prev) => ({ ...prev, ...patch }));
@@ -152,27 +214,57 @@ const App = observer(() => {
     setPanelMode('special-form');
   };
 
-  const onDeleteBase = async (id) => {
-    await store.removeBase(id);
-    setNotice('Расписание удалено');
+  const closeConfirm = () =>
+    setConfirmState((prev) => ({ ...prev, open: false, onConfirm: null }));
+
+  const requestConfirm = (config) =>
+    setConfirmState({
+      open: true,
+      title: config.title,
+      description: config.description,
+      confirmLabel: config.confirmLabel || 'Удалить',
+      onConfirm: config.onConfirm
+    });
+
+  const onDeleteBase = (id) => {
+    requestConfirm({
+      title: 'Удалить расписание?',
+      description: 'Запись будет удалена без возможности восстановления.',
+      onConfirm: async () => {
+        await store.removeBase(id);
+        setNotice('Расписание удалено');
+      }
+    });
   };
 
-  const onDeleteSpecial = async (id) => {
-    await store.removeSpecial(id);
-    setNotice('Расписание удалено');
+  const onDeleteSpecial = (id) => {
+    requestConfirm({
+      title: 'Удалить расписание?',
+      description: 'Запись будет удалена без возможности восстановления.',
+      onConfirm: async () => {
+        await store.removeSpecial(id);
+        setNotice('Расписание удалено');
+      }
+    });
   };
 
-  const onClearAll = async () => {
-    if (!window.confirm('Удалить все расписания?')) return;
-    await store.clearAll();
-    setNotice('Все расписания удалены');
+  const onClearAll = () => {
+    requestConfirm({
+      title: 'Удалить все расписания?',
+      description: 'Будут удалены все базовые и специальные интервалы.',
+      confirmLabel: 'Удалить все',
+      onConfirm: async () => {
+        await store.clearAll();
+        setNotice('Все расписания удалены');
+      }
+    });
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', py: 1.25, backgroundColor: '#F8FAFC' }}>
+    <Box sx={{ minHeight: '100vh', py: 1.5, backgroundColor: '#F3F4F6' }}>
       <Container maxWidth="xl" sx={{ px: { xs: 1, md: 1.5 } }}>
-        <Stack spacing={1}>
-          <TopLine />
+        <Stack spacing={1.25}>
+          <HeaderBar canSubmit={hasAnySchedules} />
 
           {store.error && <Alert severity="error">{store.error}</Alert>}
 
@@ -181,13 +273,14 @@ const App = observer(() => {
               <ScheduleSidebar
                 panelMode={panelMode}
                 hasAnySchedules={hasAnySchedules}
+                hasConflicts={store.hasConflicts}
                 notice={notice}
                 baseForm={baseForm}
                 specialForm={specialForm}
                 editing={editing}
                 baseSchedules={store.baseSchedules}
                 specialSchedules={store.specialSchedules}
-                loading={store.loading}
+                loading={store.loading || store.saving}
                 onBaseFormChange={onBaseFormChange}
                 onSpecialFormChange={onSpecialFormChange}
                 onStartCreateBase={() => {
@@ -212,13 +305,44 @@ const App = observer(() => {
             </Grid>
 
             <Grid item xs={12} md={8.7} lg={9.1}>
-              <Paper elevation={0} sx={{ p: 1, borderRadius: '8px', border: '1px solid #EBEEF5' }}>
+              <Paper elevation={0} sx={{ p: 1.25, borderRadius: '10px', border: '1px solid #E5E7EB' }}>
                 <YearCalendar baseSchedules={store.baseSchedules} specialSchedules={store.specialSchedules} />
               </Paper>
             </Grid>
           </Grid>
         </Stack>
       </Container>
+
+      <Dialog
+        open={confirmState.open}
+        onClose={closeConfirm}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: '12px', p: 0.5 } }}
+      >
+        <DialogTitle sx={{ fontSize: 14, fontWeight: 700 }}>{confirmState.title}</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ fontSize: 12, color: '#6B7280' }}>{confirmState.description}</Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 2, pb: 1.5 }}>
+          <Button size="small" variant="outlined" color="inherit" onClick={closeConfirm}>
+            Отмена
+          </Button>
+          <Button
+            size="small"
+            variant="contained"
+            color="error"
+            onClick={async () => {
+              if (confirmState.onConfirm) {
+                await confirmState.onConfirm();
+              }
+              closeConfirm();
+            }}
+          >
+            {confirmState.confirmLabel}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 });
