@@ -1,4 +1,5 @@
-import { Box, Grid, Paper, Stack, Typography } from '@mui/material';
+import { Box, Button, Grid, Paper, Stack, Typography } from '@mui/material';
+import { useState } from 'react';
 import { MONTHS, WEEKDAYS } from '../../constants/schedule';
 import { dayNumber, inRange, isWeekend } from '../../utils/calendar';
 
@@ -44,8 +45,15 @@ function LegendItem({ color, label }) {
   );
 }
 
-export function YearCalendar({ baseSchedules, specialSchedules }) {
+function toDateKey(date) {
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${month}-${day}`;
+}
+
+export function YearCalendar({ baseSchedules, specialSchedules, onChangeMode }) {
   const year = new Date().getFullYear();
+  const [hoveredKey, setHoveredKey] = useState(null);
 
   return (
     <Stack spacing={1}>
@@ -93,33 +101,102 @@ export function YearCalendar({ baseSchedules, specialSchedules }) {
                     const status = cell ? resolveDayStatus(cell, baseSchedules, specialSchedules) : 'none';
                     const isActive = status !== 'none';
                     const color = status === 'special' ? COLORS.special : status === 'weekend' ? COLORS.weekend : status === 'weekday' ? COLORS.weekday : COLORS.textMuted;
+                    const dateKey = cell ? toDateKey(cell) : null;
+                    const isHovered = cell && hoveredKey === dateKey;
 
                     return (
                       <Grid item xs={1} key={`${month}-${index}`}>
                         <Box
+                          onMouseEnter={() => {
+                            if (cell) setHoveredKey(dateKey);
+                          }}
+                          onMouseLeave={() => {
+                            if (cell) setHoveredKey(null);
+                          }}
                           sx={{
-                            height: 18,
+                            position: 'relative',
+                            height: 22,
                             display: 'flex',
-                            flexDirection: 'column',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: 8.5,
-                            fontWeight: 600,
-                            color: cell ? color : 'transparent'
+                            justifyContent: 'center'
                           }}
                         >
-                          <Typography component="span" sx={{ fontSize: 8.5, lineHeight: 1 }}>
-                            {cell ? cell.getDate() : ''}
-                          </Typography>
+                          {isHovered && (
+                            <Box
+                              sx={{
+                                position: 'absolute',
+                                top: -30,
+                                left: '50%',
+                                transform: 'translateX(-50%)',
+                                zIndex: 2,
+                                backgroundColor: '#FFFFFF',
+                                border: '1px solid #E5E7EB',
+                                borderRadius: '8px',
+                                boxShadow: '0px 6px 12px rgba(15, 23, 42, 0.08)',
+                                px: 0.5,
+                                py: 0.25,
+                                '&::after': {
+                                  content: '""',
+                                  position: 'absolute',
+                                  bottom: -4,
+                                  left: '50%',
+                                  transform: 'translateX(-50%)',
+                                  width: 6,
+                                  height: 6,
+                                  backgroundColor: '#FFFFFF',
+                                  borderRight: '1px solid #E5E7EB',
+                                  borderBottom: '1px solid #E5E7EB',
+                                  transformOrigin: 'center',
+                                  rotate: '45deg'
+                                }
+                              }}
+                            >
+                              <Button
+                                size="small"
+                                variant="text"
+                                onClick={() => onChangeMode?.(cell)}
+                                sx={{
+                                  fontSize: 9,
+                                  fontWeight: 600,
+                                  color: '#16A34A',
+                                  minWidth: 'auto',
+                                  px: 0.5,
+                                  py: 0,
+                                  lineHeight: 1.2
+                                }}
+                              >
+                                Изменить режим работы
+                              </Button>
+                            </Box>
+                          )}
                           <Box
                             sx={{
-                              width: 4,
-                              height: 4,
+                              width: 18,
+                              height: 18,
                               borderRadius: '50%',
-                              mt: 0.2,
-                              backgroundColor: isActive ? color : 'transparent'
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: 8.5,
+                              fontWeight: 600,
+                              color: cell ? color : 'transparent',
+                              backgroundColor: isHovered ? '#DCFCE7' : 'transparent'
                             }}
-                          />
+                          >
+                            <Typography component="span" sx={{ fontSize: 8.5, lineHeight: 1 }}>
+                              {cell ? cell.getDate() : ''}
+                            </Typography>
+                            <Box
+                              sx={{
+                                width: 4,
+                                height: 4,
+                                borderRadius: '50%',
+                                mt: 0.2,
+                                backgroundColor: isActive ? color : 'transparent'
+                              }}
+                            />
+                          </Box>
                         </Box>
                       </Grid>
                     );

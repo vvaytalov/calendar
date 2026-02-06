@@ -174,6 +174,17 @@ const App = observer(() => {
     resetEditing();
   };
 
+  const onChangeModeFromCalendar = (date) => {
+    setNotice('');
+    setEditing(null);
+    setSpecialForm((prev) => ({
+      ...prev,
+      dateFrom: toDateInput(date),
+      dateTo: toDateInput(date)
+    }));
+    setPanelMode('special-form');
+  };
+
   const onEditBase = (item) => {
     const weekdayExisting = findBaseByDays([1, 2, 3, 4, 5]) || item;
     const weekendExisting = findBaseByDays([6, 7]);
@@ -306,7 +317,11 @@ const App = observer(() => {
 
             <Grid item xs={12} md={8.7} lg={9.1}>
               <Paper elevation={0} sx={{ p: 1.25, borderRadius: '10px', border: '1px solid #E5E7EB' }}>
-                <YearCalendar baseSchedules={store.baseSchedules} specialSchedules={store.specialSchedules} />
+                <YearCalendar
+                  baseSchedules={store.baseSchedules}
+                  specialSchedules={store.specialSchedules}
+                  onChangeMode={onChangeModeFromCalendar}
+                />
               </Paper>
             </Grid>
           </Grid>
