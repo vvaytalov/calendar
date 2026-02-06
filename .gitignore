@@ -1,0 +1,51 @@
+# Зависимости
+node_modules/
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# Переменные окружения
+.env
+.env.local
+.env.*.local
+
+# Выходные папки сборки
+dist/
+build/
+.dist/
+
+# Кэш
+.vite/
+.cache/
+.eslintcache
+
+# IDE и редакторы
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Логи
+logs/
+*.log
+
+# Временные файлы
+*.tmp
+*.temp
+.turbo/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Прочее
+.node_modules/
+dist-ssr/
+*.local
