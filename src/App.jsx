@@ -10,6 +10,20 @@ import { ScheduleSidebar } from './components/schedule/ScheduleSidebar';
 
 const storeFactory = () => new ZoneScheduleStore(new ScheduleService());
 
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
+function TopLine() {
+  return (
+    <Stack direction="row" spacing={2} alignItems="center" sx={{ py: 0.25, borderBottom: '1px solid #EEF2F7' }}>
+      <Typography sx={{ fontSize: 10, color: '#64748B' }}>Системный УВД</Typography>
+      <Typography sx={{ fontSize: 10, color: '#64748B' }}>Контроль</Typography>
+      <Typography sx={{ fontSize: 10, color: '#111827', fontWeight: 700 }}>Режим работы</Typography>
+      <Box sx={{ width: 8, height: 8, borderRadius: '50%', border: '1px solid #FCA5A5' }} />
+    </Stack>
+  );
+}
+
+=======
+>>>>>>> main
 const App = observer(() => {
   const store = useMemo(storeFactory, []);
   const [panelMode, setPanelMode] = useState('none');
@@ -37,7 +51,11 @@ const App = observer(() => {
       title: baseForm.weekdayTitle,
       timeFrom: baseForm.weekdayTimeFrom,
       timeTo: baseForm.weekdayTimeTo,
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
+      daysOfWeek: baseForm.weekdayDays,
+=======
       daysOfWeek: [1, 2, 3, 4, 5],
+>>>>>>> main
       validFrom: baseForm.weekdayFrom,
       validTo: baseForm.weekdayTo
     };
@@ -46,7 +64,11 @@ const App = observer(() => {
       title: baseForm.weekendTitle,
       timeFrom: baseForm.sameAsWeekdays ? baseForm.weekdayTimeFrom : baseForm.weekendTimeFrom,
       timeTo: baseForm.sameAsWeekdays ? baseForm.weekdayTimeTo : baseForm.weekendTimeTo,
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
+      daysOfWeek: baseForm.sameAsWeekdays ? baseForm.weekdayDays : baseForm.weekendDays,
+=======
       daysOfWeek: [6, 7],
+>>>>>>> main
       validFrom: baseForm.sameAsWeekdays ? baseForm.weekdayFrom : baseForm.weekendFrom,
       validTo: baseForm.sameAsWeekdays ? baseForm.weekdayTo : baseForm.weekendTo
     };
@@ -93,7 +115,12 @@ const App = observer(() => {
       weekdayFrom: toDateInput(item.validFrom),
       weekdayTo: toDateInput(item.validTo),
       weekdayTimeFrom: item.timeFrom,
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
+      weekdayTimeTo: item.timeTo,
+      weekdayDays: item.daysOfWeek
+=======
       weekdayTimeTo: item.timeTo
+>>>>>>> main
     }));
     setPanelMode('base-form');
   };
@@ -130,6 +157,21 @@ const App = observer(() => {
   };
 
   return (
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
+    <Box sx={{ minHeight: '100vh', py: 1.25, backgroundColor: '#F8FAFC' }}>
+      <Container maxWidth="xl" sx={{ px: { xs: 1, md: 1.5 } }}>
+        <Stack spacing={1}>
+          <TopLine />
+
+          {store.error && <Alert severity="error">{store.error}</Alert>}
+
+          <Grid container spacing={1}>
+            <Grid item xs={12} md={3.3} lg={2.9}>
+              <ScheduleSidebar
+                panelMode={panelMode}
+                hasAnySchedules={hasAnySchedules}
+                notice={notice}
+=======
     <Box sx={{ minHeight: '100vh', py: 2.5, backgroundColor: '#F5F7FB' }}>
       <Container maxWidth="xl" sx={{ px: { xs: 1.5, md: 2 } }}>
         <Stack spacing={1.5}>
@@ -143,6 +185,7 @@ const App = observer(() => {
               <ScheduleSidebar
                 panelMode={panelMode}
                 hasAnySchedules={hasAnySchedules}
+>>>>>>> main
                 baseForm={baseForm}
                 specialForm={specialForm}
                 editing={editing}
@@ -170,8 +213,13 @@ const App = observer(() => {
               />
             </Grid>
 
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
+            <Grid item xs={12} md={8.7} lg={9.1}>
+              <Paper elevation={0} sx={{ p: 1, borderRadius: '8px', border: '1px solid #EBEEF5' }}>
+=======
             <Grid item xs={12} md={8} lg={9}>
               <Paper elevation={0} sx={{ p: 1.5, borderRadius: "14px", border: "1px solid #E5E9F2" }}>
+>>>>>>> main
                 <YearCalendar baseSchedules={store.baseSchedules} specialSchedules={store.specialSchedules} />
               </Paper>
             </Grid>

@@ -12,17 +12,38 @@ export const DAY_LABEL = {
   7: 'Вс'
 };
 
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
+export const DAY_OPTIONS = [
+  { value: 1, label: 'Пн' },
+  { value: 2, label: 'Вт' },
+  { value: 3, label: 'Ср' },
+  { value: 4, label: 'Чт' },
+  { value: 5, label: 'Пт' },
+  { value: 6, label: 'Сб' },
+  { value: 7, label: 'Вс' }
+];
+
+=======
+>>>>>>> main
 export const BASE_FORM_TEMPLATE = {
   weekdayTitle: 'Будние дни',
   weekdayFrom: '',
   weekdayTo: '',
   weekdayTimeFrom: '08:00',
   weekdayTimeTo: '20:00',
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
+  weekdayDays: [1, 2, 3, 4, 5],
+=======
+>>>>>>> main
   weekendTitle: 'Выходные дни',
   weekendFrom: '',
   weekendTo: '',
   weekendTimeFrom: '10:00',
   weekendTimeTo: '18:00',
+<<<<<<< codex/implement-schedule-management-for-zone24-cpj0ux
+  weekendDays: [6, 7],
+=======
+>>>>>>> main
   sameAsWeekdays: false,
   recurrence: 'yearly'
 };
