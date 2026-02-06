@@ -36,6 +36,7 @@ export const DAY_OPTIONS = [
 ];
 
 export const BASE_FORM_TEMPLATE = {
+  scheduleType: 'base',
   weekdayTitle: 'Будние дни',
   weekdayFrom: '',
   weekdayTo: '',
@@ -60,3 +61,4 @@ export const SPECIAL_FORM_TEMPLATE = {
   timeTo: '18:00',
   recurrence: 'none'
 };
+

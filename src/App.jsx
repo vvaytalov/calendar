@@ -122,8 +122,8 @@ const App = observer(() => {
       timeFrom: baseForm.sameAsWeekdays ? baseForm.weekdayTimeFrom : baseForm.weekendTimeFrom,
       timeTo: baseForm.sameAsWeekdays ? baseForm.weekdayTimeTo : baseForm.weekendTimeTo,
       daysOfWeek: baseForm.weekendDays,
-      validFrom: baseForm.sameAsWeekdays ? baseForm.weekdayFrom : baseForm.weekendFrom,
-      validTo: baseForm.sameAsWeekdays ? baseForm.weekdayTo : baseForm.weekendTo
+      validFrom: baseForm.sameAsWeekdays ? baseForm.weekdayFrom : (baseForm.weekendFrom || baseForm.weekdayFrom),
+      validTo: baseForm.sameAsWeekdays ? baseForm.weekdayTo : (baseForm.weekendTo || baseForm.weekdayTo)
     };
 
     if (editing?.kind === 'base') {

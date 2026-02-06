@@ -1,4 +1,4 @@
-import {
+﻿import {
   Alert,
   Box,
   Button,
@@ -55,7 +55,17 @@ function DaysSelector({ label, value, onChange }) {
           <FormControlLabel
             key={`${label}-${day.value}`}
             sx={{ mr: 0.5, '& .MuiFormControlLabel-label': { fontSize: 11, color: '#4B5563' } }}
-            control={<Checkbox size="small" checked={value.includes(day.value)} onChange={() => onChange(toggleDay(value, day.value))} />}
+            control={
+              <Checkbox
+                size="small"
+                checked={value.includes(day.value)}
+                onChange={() => onChange(toggleDay(value, day.value))}
+                sx={{
+                  color: '#D1D5DB',
+                  '&.Mui-checked': { color: '#22C55E' }
+                }}
+              />
+            }
             label={day.label}
           />
         ))}
@@ -68,48 +78,87 @@ function BaseForm({ baseForm, editingKind, onChange, onCancel, onSave }) {
   return (
     <Paper elevation={0} sx={panelSx}>
       <Stack spacing={1}>
-        <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
-          {editingKind === 'base' ? 'Редактирование' : 'Создание'} основного расписания
+        <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>
+          {baseForm.weekdayTitle}
         </Typography>
-        <TextField label="Заголовок" size="small" value={baseForm.weekdayTitle} onChange={(e) => onChange({ weekdayTitle: e.target.value })} />
 
-        <Stack direction="row" spacing={0.75}>
-          <TextField label="Начало" type="date" size="small" InputLabelProps={{ shrink: true }} value={baseForm.weekdayFrom} onChange={(e) => onChange({ weekdayFrom: e.target.value })} fullWidth />
-          <TextField label="Окончание" type="date" size="small" InputLabelProps={{ shrink: true }} value={baseForm.weekdayTo} onChange={(e) => onChange({ weekdayTo: e.target.value })} fullWidth />
+        <Stack spacing={0.5}>
+          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>Тип расписания</Typography>
+          <FormControl size="small">
+            <InputLabel>Тип расписания</InputLabel>
+            <Select
+              value={baseForm.scheduleType}
+              label="Тип расписания"
+              onChange={(e) => onChange({ scheduleType: e.target.value })}
+            >
+              <MenuItem value="base">Основное расписание</MenuItem>
+              <MenuItem value="special">Специальное расписание</MenuItem>
+            </Select>
+          </FormControl>
         </Stack>
 
-        <Stack direction="row" spacing={0.75}>
-          <TextField label="Время с" type="time" size="small" InputLabelProps={{ shrink: true }} value={baseForm.weekdayTimeFrom} onChange={(e) => onChange({ weekdayTimeFrom: e.target.value })} fullWidth />
-          <TextField label="Время по" type="time" size="small" InputLabelProps={{ shrink: true }} value={baseForm.weekdayTimeTo} onChange={(e) => onChange({ weekdayTimeTo: e.target.value })} fullWidth />
+        <Stack spacing={0.5}>
+          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>День</Typography>
+          <Stack direction="row" spacing={0.75}>
+            <TextField
+              label="Начало"
+              type="date"
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              value={baseForm.weekdayFrom}
+              onChange={(e) => onChange({ weekdayFrom: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Окончание"
+              type="date"
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              value={baseForm.weekdayTo}
+              onChange={(e) => onChange({ weekdayTo: e.target.value })}
+              fullWidth
+            />
+          </Stack>
         </Stack>
 
-        <DaysSelector label="Дни" value={baseForm.weekdayDays} onChange={(weekdayDays) => onChange({ weekdayDays })} />
+        <Stack spacing={0.5}>
+          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>Часы</Typography>
+          <Stack direction="row" spacing={0.75}>
+            <TextField
+              label="Время (начало)"
+              type="time"
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              value={baseForm.weekdayTimeFrom}
+              onChange={(e) => onChange({ weekdayTimeFrom: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Время (окончание)"
+              type="time"
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              value={baseForm.weekdayTimeTo}
+              onChange={(e) => onChange({ weekdayTimeTo: e.target.value })}
+              fullWidth
+            />
+          </Stack>
+        </Stack>
 
         <FormControlLabel
           sx={{ '& .MuiFormControlLabel-label': { fontSize: 12, color: '#374151' } }}
-          control={<Checkbox size="small" checked={baseForm.sameAsWeekdays} onChange={(e) => onChange({ sameAsWeekdays: e.target.checked })} />}
-          label="Будни и выходные совпадают"
+          control={
+            <Checkbox
+              size="small"
+              checked={baseForm.sameAsWeekdays}
+              onChange={(e) => onChange({ sameAsWeekdays: e.target.checked })}
+              sx={{ color: '#D1D5DB', '&.Mui-checked': { color: '#22C55E' } }}
+            />
+          }
+          label="Будние и выходные дни совпадают"
         />
 
-        {!baseForm.sameAsWeekdays && (
-          <>
-            <Divider />
-            <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>Выходные дни</Typography>
-            <TextField label="Заголовок" size="small" value={baseForm.weekendTitle} onChange={(e) => onChange({ weekendTitle: e.target.value })} />
-
-            <Stack direction="row" spacing={0.75}>
-              <TextField label="Начало" type="date" size="small" InputLabelProps={{ shrink: true }} value={baseForm.weekendFrom} onChange={(e) => onChange({ weekendFrom: e.target.value })} fullWidth />
-              <TextField label="Окончание" type="date" size="small" InputLabelProps={{ shrink: true }} value={baseForm.weekendTo} onChange={(e) => onChange({ weekendTo: e.target.value })} fullWidth />
-            </Stack>
-
-            <Stack direction="row" spacing={0.75}>
-              <TextField label="Время с" type="time" size="small" InputLabelProps={{ shrink: true }} value={baseForm.weekendTimeFrom} onChange={(e) => onChange({ weekendTimeFrom: e.target.value })} fullWidth />
-              <TextField label="Время по" type="time" size="small" InputLabelProps={{ shrink: true }} value={baseForm.weekendTimeTo} onChange={(e) => onChange({ weekendTimeTo: e.target.value })} fullWidth />
-            </Stack>
-
-            <DaysSelector label="Дни" value={baseForm.weekendDays} onChange={(weekendDays) => onChange({ weekendDays })} />
-          </>
-        )}
+        <DaysSelector label="Дни" value={baseForm.weekdayDays} onChange={(weekdayDays) => onChange({ weekdayDays })} />
 
         <FormControl size="small">
           <InputLabel>Повторяемость</InputLabel>
@@ -118,6 +167,47 @@ function BaseForm({ baseForm, editingKind, onChange, onCancel, onSave }) {
             <MenuItem value="none">Отсутствует</MenuItem>
           </Select>
         </FormControl>
+
+        {!baseForm.sameAsWeekdays && (
+          <>
+            <Divider />
+            <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>Выходные дни</Typography>
+
+            <Stack spacing={0.5}>
+              <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>Часы</Typography>
+              <Stack direction="row" spacing={0.75}>
+                <TextField
+                  label="Время (начало)"
+                  type="time"
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  value={baseForm.weekendTimeFrom}
+                  onChange={(e) => onChange({ weekendTimeFrom: e.target.value })}
+                  fullWidth
+                />
+                <TextField
+                  label="Время (окончание)"
+                  type="time"
+                  size="small"
+                  InputLabelProps={{ shrink: true }}
+                  value={baseForm.weekendTimeTo}
+                  onChange={(e) => onChange({ weekendTimeTo: e.target.value })}
+                  fullWidth
+                />
+              </Stack>
+            </Stack>
+
+            <DaysSelector label="Дни" value={baseForm.weekendDays} onChange={(weekendDays) => onChange({ weekendDays })} />
+
+            <FormControl size="small">
+              <InputLabel>Повторяемость</InputLabel>
+              <Select value={baseForm.recurrence} label="Повторяемость" onChange={(e) => onChange({ recurrence: e.target.value })}>
+                <MenuItem value="yearly">Каждый год</MenuItem>
+                <MenuItem value="none">Отсутствует</MenuItem>
+              </Select>
+            </FormControl>
+          </>
+        )}
 
         <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
           <Button size="small" variant="outlined" color="inherit" onClick={onCancel}>Отмена</Button>
@@ -336,3 +426,6 @@ export function ScheduleSidebar({
     </Stack>
   );
 }
+
+
+
