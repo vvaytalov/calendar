@@ -34,28 +34,28 @@ export function BaseForm({
   onCancel,
   onSave
 }: BaseFormProps) {
+  const fieldSx = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '8px',
+      backgroundColor: '#FFFFFF',
+      fontSize: 12
+    },
+    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E5E7EB' },
+    '& .MuiInputLabel-root': { fontSize: 11, color: '#6B7280' },
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#22C55E'
+    }
+  } as const;
+
   return (
     <Paper elevation={0} sx={panelSx}>
-      <Stack spacing={1}>
-        <Stack spacing={0.35}>
-          <Typography
-            sx={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: '#22C55E',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em'
-            }}
-          >
-            Настройка режима
-          </Typography>
-          <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#111827' }}>
-            {baseForm.weekdayTitle}
-          </Typography>
-        </Stack>
+      <Stack spacing={1.25}>
+        <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
+          {baseForm.weekdayTitle}
+        </Typography>
 
         <Stack spacing={0.5}>
-          <FormControl size="small">
+          <FormControl size="small" sx={fieldSx} fullWidth>
             <InputLabel>Тип расписания</InputLabel>
             <Select
               value={baseForm.scheduleType}
@@ -80,6 +80,7 @@ export function BaseForm({
               InputLabelProps={{ shrink: true }}
               value={baseForm.weekdayFrom}
               onChange={(e) => onChange({ weekdayFrom: e.target.value })}
+              sx={fieldSx}
               fullWidth
             />
             <TextField
@@ -89,6 +90,7 @@ export function BaseForm({
               InputLabelProps={{ shrink: true }}
               value={baseForm.weekdayTo}
               onChange={(e) => onChange({ weekdayTo: e.target.value })}
+              sx={fieldSx}
               fullWidth
             />
           </Stack>
@@ -104,6 +106,7 @@ export function BaseForm({
               InputLabelProps={{ shrink: true }}
               value={baseForm.weekdayTimeFrom}
               onChange={(e) => onChange({ weekdayTimeFrom: e.target.value })}
+              sx={fieldSx}
               fullWidth
             />
             <TextField
@@ -113,6 +116,7 @@ export function BaseForm({
               InputLabelProps={{ shrink: true }}
               value={baseForm.weekdayTimeTo}
               onChange={(e) => onChange({ weekdayTimeTo: e.target.value })}
+              sx={fieldSx}
               fullWidth
             />
           </Stack>
@@ -140,7 +144,7 @@ export function BaseForm({
 
         <DaysSelector label="Дни" value={baseForm.weekdayDays} onToggle={onToggleWeekday} />
 
-        <FormControl size="small">
+        <FormControl size="small" sx={fieldSx} fullWidth>
           <InputLabel>Повторяемость</InputLabel>
           <Select
             value={baseForm.recurrence}
@@ -157,8 +161,8 @@ export function BaseForm({
         {!baseForm.sameAsWeekdays && (
           <>
             <Divider />
-            <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>
-              Выходные дни
+            <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
+              {baseForm.weekendTitle}
             </Typography>
 
             <Stack spacing={0.5}>
@@ -171,6 +175,7 @@ export function BaseForm({
                   InputLabelProps={{ shrink: true }}
                   value={baseForm.weekendTimeFrom}
                   onChange={(e) => onChange({ weekendTimeFrom: e.target.value })}
+                  sx={fieldSx}
                   fullWidth
                 />
                 <TextField
@@ -180,6 +185,7 @@ export function BaseForm({
                   InputLabelProps={{ shrink: true }}
                   value={baseForm.weekendTimeTo}
                   onChange={(e) => onChange({ weekendTimeTo: e.target.value })}
+                  sx={fieldSx}
                   fullWidth
                 />
               </Stack>
@@ -187,7 +193,7 @@ export function BaseForm({
 
             <DaysSelector label="Дни" value={baseForm.weekendDays} onToggle={onToggleWeekend} />
 
-            <FormControl size="small">
+            <FormControl size="small" sx={fieldSx} fullWidth>
               <InputLabel>Повторяемость</InputLabel>
               <Select
                 value={baseForm.recurrence}
@@ -204,13 +210,14 @@ export function BaseForm({
         )}
 
         <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
-          <Button size="small" variant="outlined" color="inherit" onClick={onCancel}>
+          <Button size="small" variant="text" sx={{ color: '#6B7280' }} onClick={onCancel}>
             Отмена
           </Button>
           <Button
             size="small"
             variant="contained"
             sx={{
+              borderRadius: '8px',
               backgroundColor: '#22C55E',
               boxShadow: '0px 6px 12px rgba(34, 197, 94, 0.24)',
               '&:hover': { backgroundColor: '#16A34A' }

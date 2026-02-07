@@ -8,6 +8,7 @@
   Stack,
   Typography
 } from '@mui/material';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DeleteOutline, EditOutlined } from '@mui/icons-material';
 import { cardSx, panelSx, sectionTitleSx } from '../../../shared/ui/schedulePanelStyles';
 import type { SpecialCard } from '../../schedule-management/model/types';
@@ -21,6 +22,44 @@ interface SpecialCardsProps {
 export function SpecialCards({ items, onEdit, onDelete }: SpecialCardsProps) {
   if (items.length === 0) return null;
 
+  const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [uniformHeight, setUniformHeight] = useState<number | undefined>(undefined);
+
+  const measureHeights = useCallback(() => {
+    const heights = cardRefs.current.map((card) =>
+      card ? Math.ceil(card.getBoundingClientRect().height) : 0
+    );
+    const maxHeight = heights.length ? Math.max(...heights) : 0;
+    setUniformHeight(maxHeight || undefined);
+  }, []);
+
+  useLayoutEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      measureHeights();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [items, measureHeights]);
+
+  useEffect(() => {
+    const handleResize = () => measureHeights();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [measureHeights]);
+
+  useEffect(() => {
+    if (typeof ResizeObserver === 'undefined') return undefined;
+
+    const observer = new ResizeObserver(() => {
+      measureHeights();
+    });
+
+    cardRefs.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, [items, measureHeights]);
+
   return (
     <Paper elevation={0} sx={panelSx}>
       <Stack direction="row" spacing={0.5} alignItems="center" mb={0.75}>
@@ -28,8 +67,19 @@ export function SpecialCards({ items, onEdit, onDelete }: SpecialCardsProps) {
         <Typography sx={sectionTitleSx}>Специальное расписание</Typography>
       </Stack>
       <Stack spacing={0.75}>
-        {items.map((item) => (
-          <Card key={item.id} variant="outlined" sx={{ ...cardSx, position: 'relative' }}>
+        {items.map((item, index) => (
+          <Card
+            key={item.id}
+            ref={(node) => {
+              cardRefs.current[index] = node;
+            }}
+            variant="outlined"
+            sx={{
+              ...cardSx,
+              position: 'relative',
+              minHeight: uniformHeight ? `${uniformHeight}px` : undefined
+            }}
+          >
             <Box
               sx={{
                 position: 'absolute',
@@ -41,7 +91,7 @@ export function SpecialCards({ items, onEdit, onDelete }: SpecialCardsProps) {
                 backgroundColor: '#F59E0B'
               }}
             />
-            <CardContent sx={{ px: 1.25, py: 0.9, '&:last-child': { pb: 0.9 } }}>
+            <CardContent sx={{ px: 1.25, py: 0.9, flex: 1, '&:last-child': { pb: 0.9 } }}>
               <Typography sx={{ fontWeight: 700, fontSize: 12 }}>{item.title}</Typography>
               <Typography sx={{ fontSize: 11, color: '#64748B' }}>{item.dateLabel}</Typography>
               <Typography sx={{ fontSize: 11, color: '#64748B' }}>{item.daysLabel}</Typography>

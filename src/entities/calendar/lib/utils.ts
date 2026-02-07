@@ -40,6 +40,7 @@ export const getMonthCells = (year: number, monthIndex: number): Array<Date | nu
   const cells: Array<Date | null> = [];
   for (let i = 0; i < firstWeekDay; i += 1) cells.push(null);
   for (let day = 1; day <= daysInMonth; day += 1) cells.push(new Date(year, monthIndex, day));
+  while (cells.length < 42) cells.push(null);
 
   return cells;
 };

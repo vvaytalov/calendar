@@ -81,7 +81,12 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
         />
       )}
 
-      <BaseCards items={store.baseCards} onEdit={store.editBaseById} onDelete={store.deleteBase} />
+      <BaseCards
+        items={store.baseCards}
+        onCreate={store.startCreateBase}
+        onEdit={store.editBaseById}
+        onDelete={store.deleteBase}
+      />
       <SpecialCards
         items={store.specialCards}
         onEdit={store.editSpecialById}

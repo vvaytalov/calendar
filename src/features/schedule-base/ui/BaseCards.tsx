@@ -1,36 +1,93 @@
-﻿import {
+import {
   Box,
   Button,
   Card,
-  CardActions,
   CardContent,
   Checkbox,
-  Chip,
   FormControlLabel,
+  IconButton,
   Paper,
   Stack,
   Typography
 } from '@mui/material';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DeleteOutline, EditOutlined } from '@mui/icons-material';
-import { cardSx, panelSx, sectionTitleSx } from '../../../shared/ui/schedulePanelStyles';
+import { cardSx, panelSx } from '../../../shared/ui/schedulePanelStyles';
 import type { BaseCard } from '../../schedule-management/model/types';
 
 interface BaseCardsProps {
   items: BaseCard[];
+  onCreate?: () => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-export function BaseCards({ items, onEdit, onDelete }: BaseCardsProps) {
+export function BaseCards({ items, onCreate, onEdit, onDelete }: BaseCardsProps) {
   if (items.length === 0) return null;
+
+  const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [uniformHeight, setUniformHeight] = useState<number | undefined>(undefined);
+  const shouldCombine = items.length === 2;
+
+  const getDaysLabel = (days: string[]) => {
+    const normalized = days.map((day) => day.toLowerCase());
+    const isWeekdays =
+      normalized.length === 5 &&
+      ['пн', 'вт', 'ср', 'чт', 'пт'].every((day) => normalized.includes(day));
+    if (isWeekdays) return 'пн-пт';
+    const isWeekend =
+      normalized.length === 2 && ['сб', 'вс'].every((day) => normalized.includes(day));
+    if (isWeekend) return 'сб,вс';
+    return normalized.join(',');
+  };
+
+  const measureHeights = useCallback(() => {
+    const heights = cardRefs.current.map((card) =>
+      card ? Math.ceil(card.getBoundingClientRect().height) : 0
+    );
+    const maxHeight = heights.length ? Math.max(...heights) : 0;
+    setUniformHeight(maxHeight || undefined);
+  }, []);
+
+  useLayoutEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      measureHeights();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [items, measureHeights]);
+
+  useEffect(() => {
+    const handleResize = () => measureHeights();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [measureHeights]);
+
+  useEffect(() => {
+    if (typeof ResizeObserver === 'undefined') return undefined;
+
+    const observer = new ResizeObserver(() => {
+      measureHeights();
+    });
+
+    cardRefs.current.forEach((card) => {
+      if (card) observer.observe(card);
+    });
+
+    return () => observer.disconnect();
+  }, [items, measureHeights]);
 
   return (
     <Paper elevation={0} sx={panelSx}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.75}>
-        <Stack direction="row" spacing={0.5} alignItems="center">
-          <Box sx={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#22C55E' }} />
-          <Typography sx={sectionTitleSx}>Основное расписание</Typography>
-        </Stack>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
+        <Button
+          size="small"
+          variant="text"
+          sx={{ color: '#111827', fontSize: 12, fontWeight: 600, textTransform: 'none' }}
+          onClick={onCreate}
+          startIcon={<Box sx={{ fontSize: 16, lineHeight: 1 }}>+</Box>}
+        >
+          Создать
+        </Button>
         <FormControlLabel
           control={
             <Checkbox
@@ -41,58 +98,112 @@ export function BaseCards({ items, onEdit, onDelete }: BaseCardsProps) {
               }}
             />
           }
-          label={<Typography sx={{ fontSize: 10, color: '#6B7280' }}>Выбрать все</Typography>}
+          label={<Typography sx={{ fontSize: 11, color: '#16A34A' }}>Выбрать все</Typography>}
         />
       </Stack>
+
+      <Typography
+        sx={{
+          fontSize: 12,
+          fontWeight: 700,
+          color: '#22C55E',
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+          mb: 0.75
+        }}
+      >
+        Основное расписание
+      </Typography>
+
       <Stack spacing={0.75}>
-        {items.map((item) => (
-          <Card key={item.id} variant="outlined" sx={{ ...cardSx, position: 'relative' }}>
-            <Box
-              sx={{
-                position: 'absolute',
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 3,
-                borderRadius: '12px 0 0 12px',
-                backgroundColor: '#22C55E'
-              }}
-            />
-            <CardContent sx={{ px: 1.25, py: 0.9, '&:last-child': { pb: 0.9 } }}>
-              <Typography sx={{ fontWeight: 700, fontSize: 12 }}>{item.title}</Typography>
-              <Typography sx={{ fontSize: 11, color: '#64748B' }}>{item.dateLabel}</Typography>
-              <Typography sx={{ fontSize: 11, color: '#64748B' }}>{item.timeLabel}</Typography>
-              <Stack direction="row" spacing={0.25} mt={0.5} flexWrap="wrap">
-                {item.days.map((day) => (
-                  <Chip
-                    key={`${item.id}-${day}`}
-                    size="small"
-                    label={day}
-                    sx={{ height: 18, fontSize: 10, backgroundColor: '#F0FDF4' }}
-                  />
+        {shouldCombine ? (
+          <Card
+            ref={(node) => {
+              cardRefs.current[0] = node;
+            }}
+            variant="outlined"
+            sx={{
+              ...cardSx,
+              position: 'relative',
+              minHeight: uniformHeight ? `${uniformHeight}px` : undefined,
+              boxShadow: 'none',
+              borderColor: '#E5E7EB'
+            }}
+          >
+            <CardContent sx={{ px: 1.25, py: 1, flex: 1, '&:last-child': { pb: 1 } }}>
+              <Box sx={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 0.25 }}>
+                <IconButton size="small" onClick={() => onEdit(items[0].id)}>
+                  <EditOutlined sx={{ fontSize: 18, color: '#9CA3AF' }} />
+                </IconButton>
+                <IconButton size="small" onClick={() => onDelete(items[0].id)}>
+                  <DeleteOutline sx={{ fontSize: 18, color: '#9CA3AF' }} />
+                </IconButton>
+              </Box>
+              <Stack spacing={0.75} pr={4}>
+                {items.map((item) => (
+                  <Stack
+                    key={item.id}
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="flex-start"
+                    spacing={1}
+                  >
+                    <Stack spacing={0.2}>
+                      <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
+                        {item.dateLabel}{' '}
+                        <Box component="span" sx={{ color: '#22C55E', fontWeight: 600 }}>
+                          {item.title} ({getDaysLabel(item.days)})
+                        </Box>
+                      </Typography>
+                      <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#22C55E' }}>
+                        {item.timeLabel}
+                      </Typography>
+                    </Stack>
+                  </Stack>
                 ))}
               </Stack>
             </CardContent>
-            <CardActions sx={{ px: 1.25, py: 0.5 }}>
-              <Button
-                size="small"
-                startIcon={<EditOutlined fontSize="small" />}
-                onClick={() => onEdit(item.id)}
-                sx={{ color: '#16A34A' }}
-              >
-                Изменить
-              </Button>
-              <Button
-                size="small"
-                color="error"
-                startIcon={<DeleteOutline fontSize="small" />}
-                onClick={() => onDelete(item.id)}
-              >
-                Удалить
-              </Button>
-            </CardActions>
           </Card>
-        ))}
+        ) : (
+          items.map((item, index) => (
+            <Card
+              key={item.id}
+              ref={(node) => {
+                cardRefs.current[index] = node;
+              }}
+              variant="outlined"
+              sx={{
+                ...cardSx,
+                position: 'relative',
+                minHeight: uniformHeight ? `${uniformHeight}px` : undefined,
+                boxShadow: 'none',
+                borderColor: '#E5E7EB'
+              }}
+            >
+              <CardContent sx={{ px: 1.25, py: 1, flex: 1, '&:last-child': { pb: 1 } }}>
+                <Box sx={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 0.25 }}>
+                  <IconButton size="small" onClick={() => onEdit(item.id)}>
+                    <EditOutlined sx={{ fontSize: 18, color: '#9CA3AF' }} />
+                  </IconButton>
+                  <IconButton size="small" onClick={() => onDelete(item.id)}>
+                    <DeleteOutline sx={{ fontSize: 18, color: '#9CA3AF' }} />
+                  </IconButton>
+                </Box>
+                <Stack spacing={0.2} pr={4}>
+                  <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
+                    {item.dateLabel}{' '}
+                    <Box component="span" sx={{ color: '#22C55E', fontWeight: 600 }}>
+                      {item.title} ({getDaysLabel(item.days)})
+                    </Box>
+                  </Typography>
+                  <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#22C55E' }}>
+                    {item.timeLabel}
+                  </Typography>
+                </Stack>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </Stack>
     </Paper>
   );
