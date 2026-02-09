@@ -1,15 +1,4 @@
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-  Paper,
-  Stack,
-  Typography
-} from '@mui/material';
+﻿import { Box, Card, CardContent, Checkbox, IconButton, Paper, Stack, Typography } from '@mui/material';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { DeleteOutline, EditOutlined } from '@mui/icons-material';
 import { cardSx, panelSx } from '../../../shared/ui/schedulePanelStyles';
@@ -17,12 +6,21 @@ import type { BaseCard } from '../../schedule-management/model/types';
 
 interface BaseCardsProps {
   items: BaseCard[];
-  onCreate?: () => void;
+  selectedIds: string[];
+  isEditDisabled: boolean;
+  onToggle: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
 }
 
-export function BaseCards({ items, onCreate, onEdit, onDelete }: BaseCardsProps) {
+export function BaseCards({
+  items,
+  selectedIds,
+  isEditDisabled,
+  onToggle,
+  onEdit,
+  onDelete
+}: BaseCardsProps) {
   if (items.length === 0) return null;
 
   const cardRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -35,8 +33,7 @@ export function BaseCards({ items, onCreate, onEdit, onDelete }: BaseCardsProps)
       normalized.length === 5 &&
       ['пн', 'вт', 'ср', 'чт', 'пт'].every((day) => normalized.includes(day));
     if (isWeekdays) return 'пн-пт';
-    const isWeekend =
-      normalized.length === 2 && ['сб', 'вс'].every((day) => normalized.includes(day));
+    const isWeekend = normalized.length === 2 && ['сб', 'вс'].every((day) => normalized.includes(day));
     if (isWeekend) return 'сб,вс';
     return normalized.join(',');
   };
@@ -78,30 +75,6 @@ export function BaseCards({ items, onCreate, onEdit, onDelete }: BaseCardsProps)
 
   return (
     <Paper elevation={0} sx={panelSx}>
-      <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
-        <Button
-          size="small"
-          variant="text"
-          sx={{ color: '#111827', fontSize: 12, fontWeight: 600, textTransform: 'none' }}
-          onClick={onCreate}
-          startIcon={<Box sx={{ fontSize: 16, lineHeight: 1 }}>+</Box>}
-        >
-          Создать
-        </Button>
-        <FormControlLabel
-          control={
-            <Checkbox
-              size="small"
-              sx={{
-                color: '#D1D5DB',
-                '&.Mui-checked': { color: '#22C55E' }
-              }}
-            />
-          }
-          label={<Typography sx={{ fontSize: 11, color: '#16A34A' }}>Выбрать все</Typography>}
-        />
-      </Stack>
-
       <Typography
         sx={{
           fontSize: 12,
@@ -124,22 +97,13 @@ export function BaseCards({ items, onCreate, onEdit, onDelete }: BaseCardsProps)
             variant="outlined"
             sx={{
               ...cardSx,
-              position: 'relative',
               minHeight: uniformHeight ? `${uniformHeight}px` : undefined,
               boxShadow: 'none',
               borderColor: '#E5E7EB'
             }}
           >
-            <CardContent sx={{ px: 1.25, py: 1, flex: 1, '&:last-child': { pb: 1 } }}>
-              <Box sx={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 0.25 }}>
-                <IconButton size="small" onClick={() => onEdit(items[0].id)}>
-                  <EditOutlined sx={{ fontSize: 18, color: '#9CA3AF' }} />
-                </IconButton>
-                <IconButton size="small" onClick={() => onDelete(items[0].id)}>
-                  <DeleteOutline sx={{ fontSize: 18, color: '#9CA3AF' }} />
-                </IconButton>
-              </Box>
-              <Stack spacing={0.75} pr={4}>
+            <CardContent sx={{ px: 1.25, py: 1, '&:last-child': { pb: 1 } }}>
+              <Stack spacing={0.75}>
                 {items.map((item) => (
                   <Stack
                     key={item.id}
@@ -148,16 +112,42 @@ export function BaseCards({ items, onCreate, onEdit, onDelete }: BaseCardsProps)
                     alignItems="flex-start"
                     spacing={1}
                   >
-                    <Stack spacing={0.2}>
-                      <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
-                        {item.dateLabel}{' '}
-                        <Box component="span" sx={{ color: '#22C55E', fontWeight: 600 }}>
-                          {item.title} ({getDaysLabel(item.days)})
-                        </Box>
-                      </Typography>
-                      <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#22C55E' }}>
-                        {item.timeLabel}
-                      </Typography>
+                    <Stack direction="row" spacing={0.75} alignItems="flex-start" flex={1}>
+                      <Checkbox
+                        size="small"
+                        checked={selectedIds.includes(item.id)}
+                        onChange={() => onToggle(item.id)}
+                        sx={{
+                          mt: 0.2,
+                          color: '#D1D5DB',
+                          '&.Mui-checked': { color: '#22C55E' }
+                        }}
+                      />
+                      <Stack spacing={0.2}>
+                        <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
+                          {item.dateLabel}{' '}
+                          <Box component="span" sx={{ color: '#22C55E', fontWeight: 600 }}>
+                            {item.title} ({getDaysLabel(item.days)})
+                          </Box>
+                        </Typography>
+                        <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#22C55E' }}>
+                          {item.timeLabel}
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                    <Stack direction="row" spacing={0.25} alignItems="center">
+                      <IconButton
+                        size="small"
+                        disabled={isEditDisabled}
+                        onClick={() => onEdit(item.id)}
+                      >
+                        <EditOutlined
+                          sx={{ fontSize: 18, color: isEditDisabled ? '#D1D5DB' : '#9CA3AF' }}
+                        />
+                      </IconButton>
+                      <IconButton size="small" onClick={() => onDelete(item.id)}>
+                        <DeleteOutline sx={{ fontSize: 18, color: '#9CA3AF' }} />
+                      </IconButton>
                     </Stack>
                   </Stack>
                 ))}
@@ -174,31 +164,50 @@ export function BaseCards({ items, onCreate, onEdit, onDelete }: BaseCardsProps)
               variant="outlined"
               sx={{
                 ...cardSx,
-                position: 'relative',
                 minHeight: uniformHeight ? `${uniformHeight}px` : undefined,
                 boxShadow: 'none',
                 borderColor: '#E5E7EB'
               }}
             >
-              <CardContent sx={{ px: 1.25, py: 1, flex: 1, '&:last-child': { pb: 1 } }}>
-                <Box sx={{ position: 'absolute', top: 6, right: 6, display: 'flex', gap: 0.25 }}>
-                  <IconButton size="small" onClick={() => onEdit(item.id)}>
-                    <EditOutlined sx={{ fontSize: 18, color: '#9CA3AF' }} />
-                  </IconButton>
-                  <IconButton size="small" onClick={() => onDelete(item.id)}>
-                    <DeleteOutline sx={{ fontSize: 18, color: '#9CA3AF' }} />
-                  </IconButton>
-                </Box>
-                <Stack spacing={0.2} pr={4}>
-                  <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
-                    {item.dateLabel}{' '}
-                    <Box component="span" sx={{ color: '#22C55E', fontWeight: 600 }}>
-                      {item.title} ({getDaysLabel(item.days)})
-                    </Box>
-                  </Typography>
-                  <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#22C55E' }}>
-                    {item.timeLabel}
-                  </Typography>
+              <CardContent sx={{ px: 1.25, py: 1, '&:last-child': { pb: 1 } }}>
+                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={1}>
+                  <Stack direction="row" spacing={0.75} alignItems="flex-start" flex={1}>
+                    <Checkbox
+                      size="small"
+                      checked={selectedIds.includes(item.id)}
+                      onChange={() => onToggle(item.id)}
+                      sx={{
+                        mt: 0.2,
+                        color: '#D1D5DB',
+                        '&.Mui-checked': { color: '#22C55E' }
+                      }}
+                    />
+                    <Stack spacing={0.2}>
+                      <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
+                        {item.dateLabel}{' '}
+                        <Box component="span" sx={{ color: '#22C55E', fontWeight: 600 }}>
+                          {item.title} ({getDaysLabel(item.days)})
+                        </Box>
+                      </Typography>
+                      <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#22C55E' }}>
+                        {item.timeLabel}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                  <Stack direction="row" spacing={0.25} alignItems="center">
+                    <IconButton
+                      size="small"
+                      disabled={isEditDisabled}
+                      onClick={() => onEdit(item.id)}
+                    >
+                      <EditOutlined
+                        sx={{ fontSize: 18, color: isEditDisabled ? '#D1D5DB' : '#9CA3AF' }}
+                      />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => onDelete(item.id)}>
+                      <DeleteOutline sx={{ fontSize: 18, color: '#9CA3AF' }} />
+                    </IconButton>
+                  </Stack>
                 </Stack>
               </CardContent>
             </Card>

@@ -55,22 +55,6 @@ export function BaseForm({
         </Typography>
 
         <Stack spacing={0.5}>
-          <FormControl size="small" sx={fieldSx} fullWidth>
-            <InputLabel>Тип расписания</InputLabel>
-            <Select
-              value={baseForm.scheduleType}
-              label="Тип расписания"
-              onChange={(e) =>
-                onChange({ scheduleType: e.target.value as BaseFormState['scheduleType'] })
-              }
-            >
-              <MenuItem value="base">Основное расписание</MenuItem>
-              <MenuItem value="special">Специальное расписание</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
-
-        <Stack spacing={0.5}>
           <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>День</Typography>
           <Stack direction="row" spacing={0.75}>
             <TextField

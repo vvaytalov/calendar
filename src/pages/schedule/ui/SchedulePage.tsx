@@ -53,6 +53,9 @@ export const SchedulePage = observer(({ store }: SchedulePageProps) => {
         title={store.confirmState.title}
         description={store.confirmState.description}
         confirmLabel={store.confirmState.confirmLabel}
+        details={store.confirmState.details}
+        reasonLabel={store.confirmState.reasonLabel}
+        reasonPlaceholder={store.confirmState.reasonPlaceholder}
         onClose={store.closeConfirm}
         onConfirm={store.confirmAction}
       />

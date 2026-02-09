@@ -26,27 +26,27 @@ export function CalendarDayCell({ cell, onHover, onLeave, onChangeMode }: Calend
           <Box
             sx={{
               position: 'absolute',
-              top: -30,
+              top: -48,
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 2,
               backgroundColor: '#FFFFFF',
-              border: '1px solid #E5E7EB',
-              borderRadius: '8px',
-              boxShadow: '0px 6px 12px rgba(15, 23, 42, 0.08)',
-              px: 0.5,
-              py: 0.25,
+              border: '1px solid #EEF2F7',
+              borderRadius: '12px',
+              boxShadow: '0px 6px 18px rgba(15, 23, 42, 0.12)',
+              px: 1.25,
+              py: 0.5,
               '&::after': {
                 content: '""',
                 position: 'absolute',
-                bottom: -4,
+                bottom: -6,
                 left: '50%',
                 transform: 'translateX(-50%)',
-                width: 6,
-                height: 6,
+                width: 10,
+                height: 10,
                 backgroundColor: '#FFFFFF',
-                borderRight: '1px solid #E5E7EB',
-                borderBottom: '1px solid #E5E7EB',
+                borderRight: '1px solid #EEF2F7',
+                borderBottom: '1px solid #EEF2F7',
                 transformOrigin: 'center',
                 rotate: '45deg'
               }
@@ -59,11 +59,11 @@ export function CalendarDayCell({ cell, onHover, onLeave, onChangeMode }: Calend
                 if (cell.date) onChangeMode?.(cell.date);
               }}
               sx={{
-                fontSize: 9,
+                fontSize: 11,
                 fontWeight: 600,
-                color: '#16A34A',
+                color: '#7C8FF2',
                 minWidth: 'auto',
-                px: 0.5,
+                px: 0.75,
                 py: 0,
                 lineHeight: 1.2
               }}
@@ -77,6 +77,7 @@ export function CalendarDayCell({ cell, onHover, onLeave, onChangeMode }: Calend
             width: 20,
             height: 20,
             borderRadius: '50%',
+            boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -84,7 +85,8 @@ export function CalendarDayCell({ cell, onHover, onLeave, onChangeMode }: Calend
             fontSize: 8.5,
             fontWeight: 600,
             color: cell.isEmpty ? 'transparent' : cell.color,
-            backgroundColor: cell.isHovered ? '#DCFCE7' : 'transparent'
+            backgroundColor: cell.isHovered ? '#DCFCE7' : 'transparent',
+            border: cell.isHovered && !cell.isEmpty ? '1px solid #E5E7EB' : '1px solid transparent'
           }}
         >
           <Typography component="span" sx={{ fontSize: 8.5, lineHeight: 1 }}>

@@ -1,4 +1,4 @@
-import { DAY_LABEL } from '../../../shared/config/calendarConstants';
+﻿import { DAY_LABEL } from '../../../shared/config/calendarConstants';
 import { formatDate } from '../../../shared/lib/dateFormat';
 import type { BaseFormState, BaseCard, SpecialCard, SpecialFormState } from './types';
 import type {
@@ -26,10 +26,9 @@ export const toSpecialCards = (items: SpecialSchedule[]): SpecialCard[] =>
     return {
       id: item.id,
       title: item.title,
-      dateLabel: `${formatDate(item.dateFrom)} — ${formatDate(item.dateTo)}`,
+      dateLabel: `${formatDate(item.dateFrom)} — ${formatDate(item.dateTo)} (${days} дн.)`,
       daysLabel: `${days} дн.`,
-      timeLabel: `${from.toISOString().slice(11, 16)} - ${to.toISOString().slice(11, 16)}`,
-      reasonLabel: `Причина: ${item.reason || 'Ручная настройка'}`
+      timeLabel: `${from.toISOString().slice(11, 16)} - ${to.toISOString().slice(11, 16)}`
     };
   });
 
@@ -65,6 +64,5 @@ export const buildSpecialPayload = (form: SpecialFormState): SpecialSchedulePayl
   dateFrom: new Date(`${form.dateFrom}T${form.timeFrom}:00`).toISOString(),
   dateTo: new Date(`${form.dateTo}T${form.timeTo}:00`).toISOString(),
   priority: 100,
-  reason: 'Ручная настройка',
   isOverrideBase: true
 });

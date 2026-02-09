@@ -40,7 +40,13 @@ export interface ConfirmState {
   title: string;
   description: string;
   confirmLabel: string;
-  onConfirm: (() => void | Promise<void>) | null;
+  details?: {
+    base: string[];
+    special: string[];
+  };
+  reasonLabel?: string;
+  reasonPlaceholder?: string;
+  onConfirm: ((reason?: string) => void | Promise<void>) | null;
 }
 
 export interface BaseCard {
@@ -57,7 +63,6 @@ export interface SpecialCard {
   dateLabel: string;
   daysLabel: string;
   timeLabel: string;
-  reasonLabel: string;
 }
 
 export interface BaseEditorForm {

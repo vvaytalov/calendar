@@ -1,4 +1,4 @@
-import { makeAutoObservable, reaction, runInAction } from 'mobx';
+﻿import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { CalendarViewStore } from './CalendarViewStore';
 import { createBaseFormState, createSpecialFormState } from './formDefaults';
 import { buildBasePayloads, buildSpecialPayload, toBaseCards, toSpecialCards } from './mappers';
@@ -13,6 +13,16 @@ import type {
 } from './types';
 import type { BaseSchedule, DayNumber } from '../../../entities/schedule/model/types';
 import type { ZoneScheduleStore } from '../../../entities/schedule/model/ZoneScheduleStore';
+
+const DAY_LABELS: Record<DayNumber, string> = {
+  1: 'пн',
+  2: 'вт',
+  3: 'ср',
+  4: 'чт',
+  5: 'пт',
+  6: 'сб',
+  7: 'вс'
+};
 
 export class SchedulePageStore {
   panelMode: 'none' | 'base-form' | 'special-form' = 'none';
@@ -29,6 +39,8 @@ export class SchedulePageStore {
   };
   dataStore: ZoneScheduleStore;
   calendarStore: CalendarViewStore;
+  selectedBaseIds: string[] = [];
+  selectedSpecialIds: string[] = [];
 
   constructor(dataStore: ZoneScheduleStore) {
     this.dataStore = dataStore;
@@ -46,6 +58,10 @@ export class SchedulePageStore {
 
   get hasAnySchedules(): boolean {
     return this.dataStore.baseSchedules.length > 0 || this.dataStore.specialSchedules.length > 0;
+  }
+
+  get hasBaseSchedules(): boolean {
+    return this.dataStore.baseSchedules.length > 0;
   }
 
   get loading(): boolean {
@@ -66,6 +82,23 @@ export class SchedulePageStore {
 
   get specialCards(): SpecialCard[] {
     return toSpecialCards(this.dataStore.specialSchedules);
+  }
+
+  get selectedCount(): number {
+    return this.selectedBaseIds.length + this.selectedSpecialIds.length;
+  }
+
+  get allSelected(): boolean {
+    const total = this.dataStore.baseSchedules.length + this.dataStore.specialSchedules.length;
+    return total > 0 && this.selectedCount === total;
+  }
+
+  get someSelected(): boolean {
+    return this.selectedCount > 0 && !this.allSelected;
+  }
+
+  get isMultiSelect(): boolean {
+    return this.selectedCount > 1;
   }
 
   updateBaseForm(patch: Partial<BaseFormState>) {
@@ -90,10 +123,38 @@ export class SchedulePageStore {
     };
   }
 
+  toggleBaseSelection(id: string) {
+    this.selectedBaseIds = this.toggleSelection(this.selectedBaseIds, id);
+  }
+
+  toggleSpecialSelection(id: string) {
+    this.selectedSpecialIds = this.toggleSelection(this.selectedSpecialIds, id);
+  }
+
+  toggleAllSelections() {
+    if (this.allSelected) {
+      this.selectedBaseIds = [];
+      this.selectedSpecialIds = [];
+      return;
+    }
+
+    this.selectedBaseIds = this.dataStore.baseSchedules.map((item) => item.id);
+    this.selectedSpecialIds = this.dataStore.specialSchedules.map((item) => item.id);
+  }
+
+  clearSelections() {
+    this.selectedBaseIds = [];
+    this.selectedSpecialIds = [];
+  }
+
   private toggleDay(list: DayNumber[], day: DayNumber): DayNumber[] {
     return list.includes(day)
       ? list.filter((item) => item !== day)
       : [...list, day].sort((a, b) => a - b);
+  }
+
+  private toggleSelection(list: string[], id: string): string[] {
+    return list.includes(id) ? list.filter((item) => item !== id) : [...list, id];
   }
 
   resetEditing() {
@@ -102,6 +163,10 @@ export class SchedulePageStore {
   }
 
   startCreateBase() {
+    if (this.hasBaseSchedules) {
+      this.startCreateSpecial();
+      return;
+    }
     this.notice = '';
     this.editing = null;
     this.panelMode = 'base-form';
@@ -111,6 +176,14 @@ export class SchedulePageStore {
     this.notice = '';
     this.editing = null;
     this.panelMode = 'special-form';
+  }
+
+  startCreate() {
+    if (this.hasBaseSchedules) {
+      this.startCreateSpecial();
+    } else {
+      this.startCreateBase();
+    }
   }
 
   changeModeFromCalendar(date: Date) {
@@ -242,20 +315,29 @@ export class SchedulePageStore {
     title: string;
     description: string;
     confirmLabel?: string;
-    onConfirm: () => void | Promise<void>;
+    details?: {
+      base: string[];
+      special: string[];
+    };
+    reasonLabel?: string;
+    reasonPlaceholder?: string;
+    onConfirm: (reason?: string) => void | Promise<void>;
   }) {
     this.confirmState = {
       open: true,
       title: config.title,
       description: config.description,
       confirmLabel: config.confirmLabel || 'Удалить',
+      details: config.details,
+      reasonLabel: config.reasonLabel,
+      reasonPlaceholder: config.reasonPlaceholder,
       onConfirm: config.onConfirm
     };
   }
 
-  async confirmAction() {
+  async confirmAction(reason?: string) {
     if (this.confirmState.onConfirm) {
-      await this.confirmState.onConfirm();
+      await this.confirmState.onConfirm(reason);
     }
     this.closeConfirm();
   }
@@ -267,6 +349,7 @@ export class SchedulePageStore {
       onConfirm: async () => {
         await this.dataStore.removeBase(id);
         runInAction(() => {
+          this.selectedBaseIds = this.selectedBaseIds.filter((item) => item !== id);
           this.notice = 'Расписание удалено';
         });
       }
@@ -280,23 +363,95 @@ export class SchedulePageStore {
       onConfirm: async () => {
         await this.dataStore.removeSpecial(id);
         runInAction(() => {
+          this.selectedSpecialIds = this.selectedSpecialIds.filter((item) => item !== id);
           this.notice = 'Расписание удалено';
         });
       }
     });
   }
 
-  clearAll() {
+  deleteSelected() {
+    if (this.selectedCount === 0) return;
+
     this.requestConfirm({
-      title: 'Удалить все расписания?',
-      description: 'Будут удалены все базовые и специальные интервалы.',
+      title: 'Удалить выбранные расписания?',
+      description: 'Выбранные записи будут удалены без возможности восстановления.',
+      confirmLabel: 'Удалить выбранные',
+      onConfirm: async () => {
+        await Promise.all([
+          ...this.selectedBaseIds.map((id) => this.dataStore.removeBase(id)),
+          ...this.selectedSpecialIds.map((id) => this.dataStore.removeSpecial(id))
+        ]);
+        runInAction(() => {
+          this.notice = 'Выбранные расписания удалены';
+          this.clearSelections();
+        });
+      }
+    });
+  }
+
+  clearAll() {
+    const details = this.buildClearAllDetails();
+
+    this.requestConfirm({
+      title: 'Удаление',
+      description: 'Вы уверены, что хотите удалить все режимы работы:',
       confirmLabel: 'Удалить все',
+      details,
+      reasonLabel: 'Причина удаления',
+      reasonPlaceholder: 'Опишите причину удаления (например, обновление графика или ошибочная загрузка).',
       onConfirm: async () => {
         await this.dataStore.clearAll();
         runInAction(() => {
           this.notice = 'Все расписания удалены';
+          this.clearSelections();
         });
       }
     });
+  }
+
+  private buildClearAllDetails(): { base: string[]; special: string[] } {
+    return {
+      base: this.dataStore.baseSchedules.map((item) => {
+        const fromLabel = this.formatDateFull(item.validFrom);
+        const toLabel = this.formatDateFull(item.validTo);
+        const daysLabel = this.formatDaysLabel(item.daysOfWeek);
+        return `${fromLabel} - ${toLabel} (${daysLabel} ${item.timeFrom} - ${item.timeTo})`;
+      }),
+      special: this.dataStore.specialSchedules.map((item) => {
+        const from = new Date(item.dateFrom);
+        const to = new Date(item.dateTo);
+        const fromLabel = this.formatDateFull(from);
+        const toLabel = this.formatDateFull(to);
+        const days = Math.max(1, Math.ceil((to.getTime() - from.getTime()) / 86400000) + 1);
+        const dateLabel =
+          fromLabel === toLabel
+            ? `${fromLabel} (${days} дн.)`
+            : `${fromLabel} - ${toLabel} (${days} дн.)`;
+        const timeLabel = `${from.toISOString().slice(11, 16)} - ${to.toISOString().slice(11, 16)}`;
+        return `${dateLabel} - ${timeLabel}`;
+      })
+    };
+  }
+
+  private formatDateFull(value: string | Date): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '-';
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    }).format(date);
+  }
+
+  private formatDaysLabel(days: DayNumber[]): string {
+    const sorted = [...days].sort((a, b) => a - b);
+    const weekdays = [1, 2, 3, 4, 5];
+    const weekend = [6, 7];
+    const isWeekdays = sorted.length === 5 && weekdays.every((day) => sorted.includes(day));
+    if (isWeekdays) return 'Будни';
+    const isWeekend = sorted.length === 2 && weekend.every((day) => sorted.includes(day));
+    if (isWeekend) return 'Выходные';
+    return `Дни ${sorted.map((day) => DAY_LABELS[day]).join(', ')}`;
   }
 }

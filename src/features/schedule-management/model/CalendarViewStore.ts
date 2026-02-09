@@ -1,13 +1,7 @@
-import { makeAutoObservable } from 'mobx';
+﻿import { makeAutoObservable } from 'mobx';
 import { MONTHS, WEEKDAYS } from '../../../shared/config/calendarConstants';
 import { CALENDAR_COLORS } from '../../../shared/config/calendarColors';
-import {
-  dayNumber,
-  getMonthCells,
-  inRange,
-  isWeekend,
-  toDateKey
-} from '../../../entities/calendar/lib/utils';
+import { dayNumber, getMonthCells, inRange, toDateKey } from '../../../entities/calendar/lib/utils';
 import type { BaseSchedule, SpecialSchedule } from '../../../entities/schedule/model/types';
 import type {
   CalendarCell,
@@ -65,24 +59,24 @@ export class CalendarViewStore {
   get legendItems(): CalendarLegendItem[] {
     return [
       {
-        key: 'weekday',
-        label: 'Будни',
+        key: 'none',
+        label: 'Не заполнено',
+        color: CALENDAR_COLORS.textMuted,
+        border: '#E2E8F0',
+        background: '#F8FAFC',
+        text: '#64748B'
+      },
+      {
+        key: 'filled',
+        label: 'Заполнено',
         color: CALENDAR_COLORS.weekday,
         border: '#D1FAE5',
         background: '#ECFDF3',
         text: '#065F46'
       },
       {
-        key: 'weekend',
-        label: 'Выходные',
-        color: CALENDAR_COLORS.weekend,
-        border: '#D1FAE5',
-        background: '#ECFDF3',
-        text: '#065F46'
-      },
-      {
         key: 'special',
-        label: 'Специальные',
+        label: 'Специальное',
         color: CALENDAR_COLORS.special,
         border: '#FDE68A',
         background: '#FFFBEB',
@@ -115,11 +109,9 @@ export class CalendarViewStore {
     const color =
       status === 'special'
         ? CALENDAR_COLORS.special
-        : status === 'weekend'
-          ? CALENDAR_COLORS.weekend
-          : status === 'weekday'
-            ? CALENDAR_COLORS.weekday
-            : CALENDAR_COLORS.textMuted;
+        : status === 'weekday' || status === 'weekend'
+          ? CALENDAR_COLORS.weekday
+          : CALENDAR_COLORS.textMuted;
     const dateKey = toDateKey(cell);
 
     return {
@@ -149,6 +141,6 @@ export class CalendarViewStore {
     );
 
     if (!activeBase) return 'none';
-    return isWeekend(date) ? 'weekend' : 'weekday';
+    return 'weekday';
   }
 }

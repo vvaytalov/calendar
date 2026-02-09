@@ -28,75 +28,86 @@ export function SpecialForm({
   onCancel,
   onSave
 }: SpecialFormProps) {
+  const fieldSx = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '8px',
+      backgroundColor: '#FFFFFF',
+      fontSize: 12
+    },
+    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E5E7EB' },
+    '& .MuiInputLabel-root': { fontSize: 11, color: '#6B7280' },
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#22C55E'
+    }
+  } as const;
+
   return (
     <Paper elevation={0} sx={panelSx}>
-      <Stack spacing={1}>
-        <Stack spacing={0.35}>
-          <Typography
-            sx={{
-              fontSize: 10,
-              fontWeight: 700,
-              color: '#F59E0B',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em'
-            }}
-          >
-            Специальный режим
-          </Typography>
-          <Typography sx={{ fontSize: 13, fontWeight: 700 }}>
-            {editingKind === 'special' ? 'Редактирование' : 'Создание'} специального расписания
-          </Typography>
-        </Stack>
+      <Stack spacing={1.25}>
+        <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
+          {editingKind === 'special' ? 'Редактирование' : 'Создание'} специального расписания
+        </Typography>
         <TextField
           label="Заголовок"
           size="small"
           value={specialForm.title}
           onChange={(e) => onChange({ title: e.target.value })}
+          sx={fieldSx}
         />
 
-        <Stack direction="row" spacing={0.75}>
-          <TextField
-            label="Начало"
-            type="date"
-            size="small"
-            InputLabelProps={{ shrink: true }}
-            value={specialForm.dateFrom}
-            onChange={(e) => onChange({ dateFrom: e.target.value })}
-            fullWidth
-          />
-          <TextField
-            label="Окончание"
-            type="date"
-            size="small"
-            InputLabelProps={{ shrink: true }}
-            value={specialForm.dateTo}
-            onChange={(e) => onChange({ dateTo: e.target.value })}
-            fullWidth
-          />
+        <Stack spacing={0.5}>
+          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>День</Typography>
+          <Stack direction="row" spacing={0.75}>
+            <TextField
+              label="Начало"
+              type="date"
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              value={specialForm.dateFrom}
+              onChange={(e) => onChange({ dateFrom: e.target.value })}
+              sx={fieldSx}
+              fullWidth
+            />
+            <TextField
+              label="Окончание"
+              type="date"
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              value={specialForm.dateTo}
+              onChange={(e) => onChange({ dateTo: e.target.value })}
+              sx={fieldSx}
+              fullWidth
+            />
+          </Stack>
         </Stack>
 
-        <Stack direction="row" spacing={0.75}>
-          <TextField
-            label="Время с"
-            type="time"
-            size="small"
-            InputLabelProps={{ shrink: true }}
-            value={specialForm.timeFrom}
-            onChange={(e) => onChange({ timeFrom: e.target.value })}
-            fullWidth
-          />
-          <TextField
-            label="Время по"
-            type="time"
-            size="small"
-            InputLabelProps={{ shrink: true }}
-            value={specialForm.timeTo}
-            onChange={(e) => onChange({ timeTo: e.target.value })}
-            fullWidth
-          />
+        <Stack spacing={0.5}>
+          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>Часы</Typography>
+          <Stack direction="row" spacing={0.75}>
+            <TextField
+              label="Время (начало)"
+              type="time"
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              value={specialForm.timeFrom}
+              onChange={(e) => onChange({ timeFrom: e.target.value })}
+              sx={fieldSx}
+              fullWidth
+            />
+            <TextField
+              label="Время (окончание)"
+              type="time"
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              value={specialForm.timeTo}
+              onChange={(e) => onChange({ timeTo: e.target.value })}
+              sx={fieldSx}
+              fullWidth
+            />
+          </Stack>
         </Stack>
 
-        <FormControl size="small">
+        <FormControl size="small" sx={fieldSx} fullWidth>
           <InputLabel>Повторяемость</InputLabel>
           <Select
             value={specialForm.recurrence}
@@ -111,13 +122,14 @@ export function SpecialForm({
         </FormControl>
 
         <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
-          <Button size="small" variant="outlined" color="inherit" onClick={onCancel}>
+          <Button size="small" variant="text" sx={{ color: '#6B7280' }} onClick={onCancel}>
             Отмена
           </Button>
           <Button
             size="small"
             variant="contained"
             sx={{
+              borderRadius: '8px',
               backgroundColor: '#22C55E',
               boxShadow: '0px 6px 12px rgba(34, 197, 94, 0.24)',
               '&:hover': { backgroundColor: '#16A34A' }

@@ -1,5 +1,18 @@
 ﻿import { observer } from 'mobx-react-lite';
-import { Alert, CircularProgress, Stack, Typography } from '@mui/material';
+import {
+  Alert,
+  Button,
+  Checkbox,
+  CircularProgress,
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  Typography
+} from '@mui/material';
 import { WarningAmberRounded } from '@mui/icons-material';
 import { BaseForm } from '../../../features/schedule-base/ui/BaseForm';
 import { SpecialForm } from '../../../features/schedule-special/ui/SpecialForm';
@@ -7,6 +20,7 @@ import { BaseCards } from '../../../features/schedule-base/ui/BaseCards';
 import { SpecialCards } from '../../../features/schedule-special/ui/SpecialCards';
 import { EmptyStatePanel } from '../../../features/schedule-empty/ui/EmptyStatePanel';
 import { ToolbarPanel } from '../../../features/schedule-toolbar/ui/ToolbarPanel';
+import { panelSx } from '../../../shared/ui/schedulePanelStyles';
 import type { SchedulePageStore } from '../../../features/schedule-management/model/SchedulePageStore';
 
 interface ScheduleSidebarProps {
@@ -14,6 +28,21 @@ interface ScheduleSidebarProps {
 }
 
 export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
+  const showTypeSelector = !store.editing && store.panelMode !== 'none';
+  const scheduleTypeValue = store.panelMode === 'special-form' ? 'special' : 'base';
+  const fieldSx = {
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '8px',
+      backgroundColor: '#FFFFFF',
+      fontSize: 12
+    },
+    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E5E7EB' },
+    '& .MuiInputLabel-root': { fontSize: 11, color: '#6B7280' },
+    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+      borderColor: '#22C55E'
+    }
+  } as const;
+
   return (
     <Stack spacing={1}>
       {store.notice && (
@@ -49,15 +78,41 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
       )}
 
       {!store.hasAnySchedules && store.panelMode === 'none' && (
-        <EmptyStatePanel onCreate={store.startCreateBase} />
+        <EmptyStatePanel onCreate={store.startCreate} />
       )}
 
       {store.hasAnySchedules && store.panelMode === 'none' && (
-        <ToolbarPanel
-          onCreateBase={store.startCreateBase}
-          onCreateSpecial={store.startCreateSpecial}
-          onClearAll={store.clearAll}
-        />
+        <ToolbarPanel onCreate={store.startCreate} onClearAll={store.clearAll} />
+      )}
+
+      {showTypeSelector && (
+        <Paper elevation={0} sx={panelSx}>
+          <FormControl size="small" sx={fieldSx} fullWidth>
+            <InputLabel>Тип расписания</InputLabel>
+            <Select
+              value={scheduleTypeValue}
+              label="Тип расписания"
+              onChange={(e) => {
+                const next = e.target.value as 'base' | 'special';
+                if (next === 'base') {
+                  store.startCreateBase();
+                } else {
+                  store.startCreateSpecial();
+                }
+              }}
+            >
+              <MenuItem value="base" disabled={store.hasBaseSchedules}>
+                Основное расписание
+              </MenuItem>
+              <MenuItem value="special">Специальное расписание</MenuItem>
+            </Select>
+          </FormControl>
+          {store.hasBaseSchedules && (
+            <Typography sx={{ fontSize: 10, color: '#94A3B8', mt: 0.5 }}>
+              Основное расписание уже создано. Можно добавить только специальное.
+            </Typography>
+          )}
+        </Paper>
       )}
 
       {store.panelMode === 'base-form' && (
@@ -81,14 +136,50 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
         />
       )}
 
+      {store.hasAnySchedules && (
+        <Paper elevation={0} sx={panelSx}>
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <FormControlLabel
+              control={
+                <Checkbox
+                  size="small"
+                  checked={store.allSelected}
+                  indeterminate={store.someSelected}
+                  onChange={store.toggleAllSelections}
+                  sx={{
+                    color: '#D1D5DB',
+                    '&.Mui-checked': { color: '#22C55E' }
+                  }}
+                />
+              }
+              label={<Typography sx={{ fontSize: 11, color: '#16A34A' }}>Выбрать все</Typography>}
+            />
+            <Button
+              size="small"
+              color="error"
+              disabled={store.selectedCount === 0}
+              sx={{ fontSize: 10, textTransform: 'none' }}
+              onClick={store.deleteSelected}
+            >
+              Удалить выбранные
+            </Button>
+          </Stack>
+        </Paper>
+      )}
+
       <BaseCards
         items={store.baseCards}
-        onCreate={store.startCreateBase}
+        selectedIds={store.selectedBaseIds}
+        isEditDisabled={store.isMultiSelect}
+        onToggle={store.toggleBaseSelection}
         onEdit={store.editBaseById}
         onDelete={store.deleteBase}
       />
       <SpecialCards
         items={store.specialCards}
+        selectedIds={store.selectedSpecialIds}
+        isEditDisabled={store.isMultiSelect}
+        onToggle={store.toggleSpecialSelection}
         onEdit={store.editSpecialById}
         onDelete={store.deleteSpecial}
       />
