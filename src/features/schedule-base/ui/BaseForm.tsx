@@ -1,5 +1,4 @@
-﻿import {
-  Button,
+import {
   Checkbox,
   Divider,
   FormControl,
@@ -8,13 +7,18 @@
   MenuItem,
   Paper,
   Select,
-  Skeleton,
-  Stack,
-  TextField,
-  Typography
+  Stack
 } from '@mui/material';
 import { DaysSelector } from './DaysSelector';
 import { panelSx } from '../../../shared/ui/schedulePanelStyles';
+import { scheduleFieldSx } from '../../../shared/ui/scheduleFieldSx';
+import {
+  DateRangeFields,
+  FieldLabel,
+  FormActions,
+  FormTitle,
+  TimeRangeFields
+} from '../../../shared/ui/scheduleFormParts';
 import type { BaseFormState } from '../../schedule-management/model/types';
 import type { DayNumber } from '../../../entities/schedule/model/types';
 
@@ -25,7 +29,6 @@ interface BaseFormProps {
   onToggleWeekend: (day: DayNumber) => void;
   onCancel: () => void;
   onSave: () => void;
-  isLoading?: boolean;
 }
 
 export function BaseForm({
@@ -34,8 +37,7 @@ export function BaseForm({
   onToggleWeekday,
   onToggleWeekend,
   onCancel,
-  onSave,
-  isLoading = false
+  onSave
 }: BaseFormProps) {
   const hasWeekdayDates = Boolean(baseForm.weekdayFrom && baseForm.weekdayTo);
   const hasWeekdayDays = baseForm.weekdayDays.length > 0;
@@ -45,142 +47,35 @@ export function BaseForm({
     ? hasWeekdayDates && hasWeekdayDays
     : hasWeekdayDates && hasWeekdayDays && hasWeekendDates && hasWeekendDays;
 
-  const fieldSx = {
-    '& .MuiOutlinedInput-root': {
-      borderRadius: '8px',
-      backgroundColor: '#FFFFFF',
-      fontSize: 12
-    },
-    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E5E7EB' },
-    '& .MuiInputLabel-root': { fontSize: 11, color: '#6B7280' },
-    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#22C55E'
-    }
-  } as const;
-
-  if (isLoading) {
-    return (
-      <Paper elevation={0} sx={panelSx}>
-        <Stack spacing={1.25}>
-          <Skeleton variant="text" width="55%" height={18} />
-
-          <Stack spacing={0.5}>
-            <Skeleton variant="text" width="20%" height={14} />
-            <Stack direction="row" spacing={0.75}>
-              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
-              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
-            </Stack>
-          </Stack>
-
-          <Stack spacing={0.5}>
-            <Skeleton variant="text" width="20%" height={14} />
-            <Stack direction="row" spacing={0.75}>
-              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
-              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
-            </Stack>
-          </Stack>
-
-          <Skeleton variant="rounded" height={32} />
-
-          <Stack spacing={0.5}>
-            <Skeleton variant="text" width="20%" height={14} />
-            <Stack direction="row" spacing={0.5} flexWrap="wrap" rowGap={0.5}>
-              {Array.from({ length: 7 }).map((_, index) => (
-                <Skeleton key={`weekday-skel-${index}`} variant="rounded" width={32} height={16} />
-              ))}
-            </Stack>
-          </Stack>
-
-          <Skeleton variant="rounded" height={36} />
-
-          <Divider />
-          <Skeleton variant="text" width="55%" height={18} />
-
-          <Stack spacing={0.5}>
-            <Skeleton variant="text" width="20%" height={14} />
-            <Stack direction="row" spacing={0.75}>
-              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
-              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
-            </Stack>
-          </Stack>
-
-          <Stack spacing={0.5}>
-            <Skeleton variant="text" width="20%" height={14} />
-            <Stack direction="row" spacing={0.5} flexWrap="wrap" rowGap={0.5}>
-              {Array.from({ length: 2 }).map((_, index) => (
-                <Skeleton key={`weekend-skel-${index}`} variant="rounded" width={32} height={16} />
-              ))}
-            </Stack>
-          </Stack>
-
-          <Skeleton variant="rounded" height={36} />
-
-          <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
-            <Skeleton variant="rounded" width={64} height={28} />
-            <Skeleton variant="rounded" width={88} height={28} />
-          </Stack>
-        </Stack>
-      </Paper>
-    );
-  }
-
   return (
     <Paper elevation={0} sx={panelSx}>
       <Stack spacing={1.25}>
-        <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
-          {baseForm.weekdayTitle}
-        </Typography>
+        <FormTitle>{baseForm.weekdayTitle}</FormTitle>
 
         <Stack spacing={0.5}>
-          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>День</Typography>
-          <Stack direction="row" spacing={0.75}>
-            <TextField
-              label="Начало"
-              type="date"
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              value={baseForm.weekdayFrom}
-              onChange={(e) => onChange({ weekdayFrom: e.target.value })}
-              sx={fieldSx}
-              fullWidth
-            />
-            <TextField
-              label="Окончание"
-              type="date"
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              value={baseForm.weekdayTo}
-              onChange={(e) => onChange({ weekdayTo: e.target.value })}
-              sx={fieldSx}
-              fullWidth
-            />
-          </Stack>
+          <FieldLabel>День</FieldLabel>
+          <DateRangeFields
+            fromLabel="Начало"
+            toLabel="Окончание"
+            fromValue={baseForm.weekdayFrom}
+            toValue={baseForm.weekdayTo}
+            onChangeFrom={(value) => onChange({ weekdayFrom: value })}
+            onChangeTo={(value) => onChange({ weekdayTo: value })}
+            fieldSx={scheduleFieldSx}
+          />
         </Stack>
 
         <Stack spacing={0.5}>
-          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>Часы</Typography>
-          <Stack direction="row" spacing={0.75}>
-            <TextField
-              label="Время (начало)"
-              type="time"
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              value={baseForm.weekdayTimeFrom}
-              onChange={(e) => onChange({ weekdayTimeFrom: e.target.value })}
-              sx={fieldSx}
-              fullWidth
-            />
-            <TextField
-              label="Время (окончание)"
-              type="time"
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              value={baseForm.weekdayTimeTo}
-              onChange={(e) => onChange({ weekdayTimeTo: e.target.value })}
-              sx={fieldSx}
-              fullWidth
-            />
-          </Stack>
+          <FieldLabel>Часы</FieldLabel>
+          <TimeRangeFields
+            fromLabel="Время (начало)"
+            toLabel="Время (окончание)"
+            fromValue={baseForm.weekdayTimeFrom}
+            toValue={baseForm.weekdayTimeTo}
+            onChangeFrom={(value) => onChange({ weekdayTimeFrom: value })}
+            onChangeTo={(value) => onChange({ weekdayTimeTo: value })}
+            fieldSx={scheduleFieldSx}
+          />
         </Stack>
 
         <FormControlLabel
@@ -205,7 +100,7 @@ export function BaseForm({
 
         <DaysSelector label="Дни" value={baseForm.weekdayDays} onToggle={onToggleWeekday} />
 
-        <FormControl size="small" sx={fieldSx} fullWidth>
+        <FormControl size="small" sx={scheduleFieldSx} fullWidth>
           <InputLabel>Повторяемость</InputLabel>
           <Select
             value={baseForm.recurrence}
@@ -222,39 +117,24 @@ export function BaseForm({
         {!baseForm.sameAsWeekdays && (
           <>
             <Divider />
-            <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
-              {baseForm.weekendTitle}
-            </Typography>
+            <FormTitle>{baseForm.weekendTitle}</FormTitle>
 
             <Stack spacing={0.5}>
-              <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>Часы</Typography>
-              <Stack direction="row" spacing={0.75}>
-                <TextField
-                  label="Время (начало)"
-                  type="time"
-                  size="small"
-                  InputLabelProps={{ shrink: true }}
-                  value={baseForm.weekendTimeFrom}
-                  onChange={(e) => onChange({ weekendTimeFrom: e.target.value })}
-                  sx={fieldSx}
-                  fullWidth
-                />
-                <TextField
-                  label="Время (окончание)"
-                  type="time"
-                  size="small"
-                  InputLabelProps={{ shrink: true }}
-                  value={baseForm.weekendTimeTo}
-                  onChange={(e) => onChange({ weekendTimeTo: e.target.value })}
-                  sx={fieldSx}
-                  fullWidth
-                />
-              </Stack>
+              <FieldLabel>Часы</FieldLabel>
+              <TimeRangeFields
+                fromLabel="Время (начало)"
+                toLabel="Время (окончание)"
+                fromValue={baseForm.weekendTimeFrom}
+                toValue={baseForm.weekendTimeTo}
+                onChangeFrom={(value) => onChange({ weekendTimeFrom: value })}
+                onChangeTo={(value) => onChange({ weekendTimeTo: value })}
+                fieldSx={scheduleFieldSx}
+              />
             </Stack>
 
             <DaysSelector label="Дни" value={baseForm.weekendDays} onToggle={onToggleWeekend} />
 
-            <FormControl size="small" sx={fieldSx} fullWidth>
+            <FormControl size="small" sx={scheduleFieldSx} fullWidth>
               <InputLabel>Повторяемость</InputLabel>
               <Select
                 value={baseForm.recurrence}
@@ -270,25 +150,7 @@ export function BaseForm({
           </>
         )}
 
-        <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
-          <Button size="small" variant="text" sx={{ color: '#6B7280' }} onClick={onCancel}>
-            Отмена
-          </Button>
-          <Button
-            size="small"
-            variant="contained"
-            disabled={!canSave}
-            sx={{
-              borderRadius: '8px',
-              backgroundColor: '#22C55E',
-              boxShadow: '0px 6px 12px rgba(34, 197, 94, 0.24)',
-              '&:hover': { backgroundColor: '#16A34A' }
-            }}
-            onClick={onSave}
-          >
-            Сохранить
-          </Button>
-        </Stack>
+        <FormActions onCancel={onCancel} onSave={onSave} disableSave={!canSave} />
       </Stack>
     </Paper>
   );

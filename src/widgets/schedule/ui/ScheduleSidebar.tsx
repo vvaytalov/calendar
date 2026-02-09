@@ -20,7 +20,9 @@ import { BaseCards } from '../../../features/schedule-base/ui/BaseCards';
 import { SpecialCards } from '../../../features/schedule-special/ui/SpecialCards';
 import { EmptyStatePanel } from '../../../features/schedule-empty/ui/EmptyStatePanel';
 import { ToolbarPanel } from '../../../features/schedule-toolbar/ui/ToolbarPanel';
+import { ScheduleSidebarSkeleton } from './ScheduleSidebarSkeleton';
 import { panelSx } from '../../../shared/ui/schedulePanelStyles';
+import { scheduleFieldSx } from '../../../shared/ui/scheduleFieldSx';
 import type { SchedulePageStore } from '../../../features/schedule-management/model/SchedulePageStore';
 
 interface ScheduleSidebarProps {
@@ -30,18 +32,6 @@ interface ScheduleSidebarProps {
 export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
   const showTypeSelector = !store.editing && store.panelMode !== 'none';
   const scheduleTypeValue = store.panelMode === 'special-form' ? 'special' : 'base';
-  const fieldSx = {
-    '& .MuiOutlinedInput-root': {
-      borderRadius: '8px',
-      backgroundColor: '#FFFFFF',
-      fontSize: 12
-    },
-    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E5E7EB' },
-    '& .MuiInputLabel-root': { fontSize: 11, color: '#6B7280' },
-    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#22C55E'
-    }
-  } as const;
 
   return (
     <Stack spacing={1}>
@@ -77,17 +67,17 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
         </Alert>
       )}
 
-      {!store.hasAnySchedules && store.panelMode === 'none' && (
+      {!store.loading && !store.hasAnySchedules && store.panelMode === 'none' && (
         <EmptyStatePanel onCreate={store.startCreate} />
       )}
 
-      {store.hasAnySchedules && store.panelMode === 'none' && (
+      {!store.loading && store.hasAnySchedules && store.panelMode === 'none' && (
         <ToolbarPanel onCreate={store.startCreate} onClearAll={store.clearAll} />
       )}
 
       {showTypeSelector && (
         <Paper elevation={0} sx={panelSx}>
-          <FormControl size="small" sx={fieldSx} fullWidth>
+          <FormControl size="small" sx={scheduleFieldSx} fullWidth>
             <InputLabel>Тип расписания</InputLabel>
             <Select
               value={scheduleTypeValue}
@@ -123,7 +113,6 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
           onToggleWeekend={store.toggleWeekendDay}
           onCancel={store.resetEditing}
           onSave={store.saveBase}
-          isLoading={store.loading}
         />
       )}
 
@@ -134,11 +123,12 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
           onChange={store.updateSpecialForm}
           onCancel={store.resetEditing}
           onSave={store.saveSpecial}
-          isLoading={store.loading}
         />
       )}
 
-      {store.hasAnySchedules && (
+      {store.loading && <ScheduleSidebarSkeleton />}
+
+      {!store.loading && store.hasAnySchedules && (
         <Paper elevation={0} sx={panelSx}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <FormControlLabel
@@ -169,24 +159,28 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
         </Paper>
       )}
 
-      <BaseCards
-        items={store.baseCards}
-        selectedIds={store.selectedBaseIds}
-        isEditDisabled={store.isMultiSelect}
-        isActionsDisabled={store.allSelected}
-        onToggle={store.toggleBaseSelection}
-        onEdit={store.editBaseById}
-        onDelete={store.deleteBase}
-      />
-      <SpecialCards
-        items={store.specialCards}
-        selectedIds={store.selectedSpecialIds}
-        isEditDisabled={store.isMultiSelect}
-        isActionsDisabled={store.allSelected}
-        onToggle={store.toggleSpecialSelection}
-        onEdit={store.editSpecialById}
-        onDelete={store.deleteSpecial}
-      />
+      {!store.loading && (
+        <>
+          <BaseCards
+            items={store.baseCards}
+            selectedIds={store.selectedBaseIds}
+            isEditDisabled={store.isMultiSelect}
+            isActionsDisabled={store.allSelected}
+            onToggle={store.toggleBaseSelection}
+            onEdit={store.editBaseById}
+            onDelete={store.deleteBase}
+          />
+          <SpecialCards
+            items={store.specialCards}
+            selectedIds={store.selectedSpecialIds}
+            isEditDisabled={store.isMultiSelect}
+            isActionsDisabled={store.allSelected}
+            onToggle={store.toggleSpecialSelection}
+            onEdit={store.editSpecialById}
+            onDelete={store.deleteSpecial}
+          />
+        </>
+      )}
 
       {store.loading && (
         <Stack direction="row" spacing={1} alignItems="center">

@@ -1,16 +1,13 @@
-﻿import {
-  Button,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Skeleton,
-  Stack,
-  TextField,
-  Typography
-} from '@mui/material';
+import { FormControl, InputLabel, MenuItem, Paper, Select, Stack, TextField } from '@mui/material';
 import { panelSx } from '../../../shared/ui/schedulePanelStyles';
+import { scheduleFieldSx } from '../../../shared/ui/scheduleFieldSx';
+import {
+  DateRangeFields,
+  FieldLabel,
+  FormActions,
+  FormTitle,
+  TimeRangeFields
+} from '../../../shared/ui/scheduleFormParts';
 import type { SpecialFormState } from '../../schedule-management/model/types';
 import type { ScheduleKind } from '../../../entities/schedule/model/types';
 
@@ -20,7 +17,6 @@ interface SpecialFormProps {
   onChange: (patch: Partial<SpecialFormState>) => void;
   onCancel: () => void;
   onSave: () => void;
-  isLoading?: boolean;
 }
 
 export function SpecialForm({
@@ -28,125 +24,51 @@ export function SpecialForm({
   editingKind,
   onChange,
   onCancel,
-  onSave,
-  isLoading = false
+  onSave
 }: SpecialFormProps) {
   const canSave = Boolean(specialForm.dateFrom && specialForm.dateTo);
-
-  const fieldSx = {
-    '& .MuiOutlinedInput-root': {
-      borderRadius: '8px',
-      backgroundColor: '#FFFFFF',
-      fontSize: 12
-    },
-    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#E5E7EB' },
-    '& .MuiInputLabel-root': { fontSize: 11, color: '#6B7280' },
-    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: '#22C55E'
-    }
-  } as const;
-
-  if (isLoading) {
-    return (
-      <Paper elevation={0} sx={panelSx}>
-        <Stack spacing={1.25}>
-          <Skeleton variant="text" width="70%" height={18} />
-          <Skeleton variant="rounded" height={36} />
-
-          <Stack spacing={0.5}>
-            <Skeleton variant="text" width="20%" height={14} />
-            <Stack direction="row" spacing={0.75}>
-              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
-              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
-            </Stack>
-          </Stack>
-
-          <Stack spacing={0.5}>
-            <Skeleton variant="text" width="20%" height={14} />
-            <Stack direction="row" spacing={0.75}>
-              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
-              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
-            </Stack>
-          </Stack>
-
-          <Skeleton variant="rounded" height={36} />
-
-          <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
-            <Skeleton variant="rounded" width={64} height={28} />
-            <Skeleton variant="rounded" width={88} height={28} />
-          </Stack>
-        </Stack>
-      </Paper>
-    );
-  }
 
   return (
     <Paper elevation={0} sx={panelSx}>
       <Stack spacing={1.25}>
-        <Typography sx={{ fontSize: 14, fontWeight: 700, color: '#111827' }}>
+        <FormTitle>
           {editingKind === 'special' ? 'Редактирование' : 'Создание'} специального расписания
-        </Typography>
+        </FormTitle>
         <TextField
           label="Заголовок"
           size="small"
           value={specialForm.title}
           onChange={(e) => onChange({ title: e.target.value })}
-          sx={fieldSx}
+          sx={scheduleFieldSx}
         />
 
         <Stack spacing={0.5}>
-          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>День</Typography>
-          <Stack direction="row" spacing={0.75}>
-            <TextField
-              label="Начало"
-              type="date"
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              value={specialForm.dateFrom}
-              onChange={(e) => onChange({ dateFrom: e.target.value })}
-              sx={fieldSx}
-              fullWidth
-            />
-            <TextField
-              label="Окончание"
-              type="date"
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              value={specialForm.dateTo}
-              onChange={(e) => onChange({ dateTo: e.target.value })}
-              sx={fieldSx}
-              fullWidth
-            />
-          </Stack>
+          <FieldLabel>День</FieldLabel>
+          <DateRangeFields
+            fromLabel="Начало"
+            toLabel="Окончание"
+            fromValue={specialForm.dateFrom}
+            toValue={specialForm.dateTo}
+            onChangeFrom={(value) => onChange({ dateFrom: value })}
+            onChangeTo={(value) => onChange({ dateTo: value })}
+            fieldSx={scheduleFieldSx}
+          />
         </Stack>
 
         <Stack spacing={0.5}>
-          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#6B7280' }}>Часы</Typography>
-          <Stack direction="row" spacing={0.75}>
-            <TextField
-              label="Время (начало)"
-              type="time"
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              value={specialForm.timeFrom}
-              onChange={(e) => onChange({ timeFrom: e.target.value })}
-              sx={fieldSx}
-              fullWidth
-            />
-            <TextField
-              label="Время (окончание)"
-              type="time"
-              size="small"
-              InputLabelProps={{ shrink: true }}
-              value={specialForm.timeTo}
-              onChange={(e) => onChange({ timeTo: e.target.value })}
-              sx={fieldSx}
-              fullWidth
-            />
-          </Stack>
+          <FieldLabel>Часы</FieldLabel>
+          <TimeRangeFields
+            fromLabel="Время (начало)"
+            toLabel="Время (окончание)"
+            fromValue={specialForm.timeFrom}
+            toValue={specialForm.timeTo}
+            onChangeFrom={(value) => onChange({ timeFrom: value })}
+            onChangeTo={(value) => onChange({ timeTo: value })}
+            fieldSx={scheduleFieldSx}
+          />
         </Stack>
 
-        <FormControl size="small" sx={fieldSx} fullWidth>
+        <FormControl size="small" sx={scheduleFieldSx} fullWidth>
           <InputLabel>Повторяемость</InputLabel>
           <Select
             value={specialForm.recurrence}
@@ -160,25 +82,7 @@ export function SpecialForm({
           </Select>
         </FormControl>
 
-        <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
-          <Button size="small" variant="text" sx={{ color: '#6B7280' }} onClick={onCancel}>
-            Отмена
-          </Button>
-          <Button
-            size="small"
-            variant="contained"
-            disabled={!canSave}
-            sx={{
-              borderRadius: '8px',
-              backgroundColor: '#22C55E',
-              boxShadow: '0px 6px 12px rgba(34, 197, 94, 0.24)',
-              '&:hover': { backgroundColor: '#16A34A' }
-            }}
-            onClick={onSave}
-          >
-            Сохранить
-          </Button>
-        </Stack>
+        <FormActions onCancel={onCancel} onSave={onSave} disableSave={!canSave} />
       </Stack>
     </Paper>
   );
