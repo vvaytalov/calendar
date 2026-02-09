@@ -1,4 +1,4 @@
-﻿import { Box, Button, Grid, Typography } from '@mui/material';
+import { Box, Button, Grid, Skeleton, Typography } from '@mui/material';
 import type { CalendarCell } from '../../../entities/calendar/model/types';
 
 interface CalendarDayCellProps {
@@ -6,14 +6,27 @@ interface CalendarDayCellProps {
   onHover: (cell: CalendarCell) => void;
   onLeave: (cell: CalendarCell) => void;
   onChangeMode?: (date: Date) => void;
+  isLoading?: boolean;
 }
 
-export function CalendarDayCell({ cell, onHover, onLeave, onChangeMode }: CalendarDayCellProps) {
+export function CalendarDayCell({
+  cell,
+  onHover,
+  onLeave,
+  onChangeMode,
+  isLoading = false
+}: CalendarDayCellProps) {
+  const showSkeleton = isLoading && !cell.isEmpty;
+
   return (
     <Grid item xs={1}>
       <Box
-        onMouseEnter={() => onHover(cell)}
-        onMouseLeave={() => onLeave(cell)}
+        onMouseEnter={() => {
+          if (!isLoading) onHover(cell);
+        }}
+        onMouseLeave={() => {
+          if (!isLoading) onLeave(cell);
+        }}
         sx={{
           position: 'relative',
           height: 24,
@@ -22,7 +35,7 @@ export function CalendarDayCell({ cell, onHover, onLeave, onChangeMode }: Calend
           justifyContent: 'center'
         }}
       >
-        {cell.isHovered && (
+        {!isLoading && cell.isHovered && (
           <Box
             sx={{
               position: 'absolute',
@@ -89,18 +102,24 @@ export function CalendarDayCell({ cell, onHover, onLeave, onChangeMode }: Calend
             border: cell.isHovered && !cell.isEmpty ? '1px solid #E5E7EB' : '1px solid transparent'
           }}
         >
-          <Typography component="span" sx={{ fontSize: 8.5, lineHeight: 1 }}>
-            {cell.label}
-          </Typography>
-          <Box
-            sx={{
-              width: 4,
-              height: 4,
-              borderRadius: '50%',
-              mt: 0.2,
-              backgroundColor: cell.isActive ? cell.color : 'transparent'
-            }}
-          />
+          {showSkeleton ? (
+            <Skeleton variant="text" width={10} height={12} sx={{ transform: 'none' }} />
+          ) : (
+            <>
+              <Typography component="span" sx={{ fontSize: 8.5, lineHeight: 1 }}>
+                {cell.label}
+              </Typography>
+              <Box
+                sx={{
+                  width: 4,
+                  height: 4,
+                  borderRadius: '50%',
+                  mt: 0.2,
+                  backgroundColor: cell.isActive ? cell.color : 'transparent'
+                }}
+              />
+            </>
+          )}
         </Box>
       </Box>
     </Grid>

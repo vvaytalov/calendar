@@ -8,13 +8,15 @@ interface CalendarMonthProps {
   onHoverCell: (cell: CalendarCell) => void;
   onLeaveCell: (cell: CalendarCell) => void;
   onChangeMode: (date: Date) => void;
+  isLoading?: boolean;
 }
 
 export function CalendarMonth({
   month,
   onHoverCell,
   onLeaveCell,
-  onChangeMode
+  onChangeMode,
+  isLoading = false
 }: CalendarMonthProps) {
   return (
     <Grid item xs={12} md={6} lg={3}>
@@ -54,6 +56,7 @@ export function CalendarMonth({
               onHover={onHoverCell}
               onLeave={onLeaveCell}
               onChangeMode={onChangeMode}
+              isLoading={isLoading}
             />
           ))}
         </Grid>

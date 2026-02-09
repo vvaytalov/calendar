@@ -123,6 +123,7 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
           onToggleWeekend={store.toggleWeekendDay}
           onCancel={store.resetEditing}
           onSave={store.saveBase}
+          isLoading={store.loading}
         />
       )}
 
@@ -133,6 +134,7 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
           onChange={store.updateSpecialForm}
           onCancel={store.resetEditing}
           onSave={store.saveSpecial}
+          isLoading={store.loading}
         />
       )}
 

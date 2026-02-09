@@ -31,6 +31,7 @@ export const YearCalendar = observer(({ store }: YearCalendarProps) => {
             onHoverCell={calendarStore.onHoverCell}
             onLeaveCell={calendarStore.onLeaveCell}
             onChangeMode={store.changeModeFromCalendar}
+            isLoading={store.loading}
           />
         ))}
       </Grid>

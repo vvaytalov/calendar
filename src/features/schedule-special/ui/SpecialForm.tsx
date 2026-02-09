@@ -5,6 +5,7 @@
   MenuItem,
   Paper,
   Select,
+  Skeleton,
   Stack,
   TextField,
   Typography
@@ -19,6 +20,7 @@ interface SpecialFormProps {
   onChange: (patch: Partial<SpecialFormState>) => void;
   onCancel: () => void;
   onSave: () => void;
+  isLoading?: boolean;
 }
 
 export function SpecialForm({
@@ -26,7 +28,8 @@ export function SpecialForm({
   editingKind,
   onChange,
   onCancel,
-  onSave
+  onSave,
+  isLoading = false
 }: SpecialFormProps) {
   const canSave = Boolean(specialForm.dateFrom && specialForm.dateTo);
 
@@ -42,6 +45,40 @@ export function SpecialForm({
       borderColor: '#22C55E'
     }
   } as const;
+
+  if (isLoading) {
+    return (
+      <Paper elevation={0} sx={panelSx}>
+        <Stack spacing={1.25}>
+          <Skeleton variant="text" width="70%" height={18} />
+          <Skeleton variant="rounded" height={36} />
+
+          <Stack spacing={0.5}>
+            <Skeleton variant="text" width="20%" height={14} />
+            <Stack direction="row" spacing={0.75}>
+              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
+              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
+            </Stack>
+          </Stack>
+
+          <Stack spacing={0.5}>
+            <Skeleton variant="text" width="20%" height={14} />
+            <Stack direction="row" spacing={0.75}>
+              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
+              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
+            </Stack>
+          </Stack>
+
+          <Skeleton variant="rounded" height={36} />
+
+          <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
+            <Skeleton variant="rounded" width={64} height={28} />
+            <Skeleton variant="rounded" width={88} height={28} />
+          </Stack>
+        </Stack>
+      </Paper>
+    );
+  }
 
   return (
     <Paper elevation={0} sx={panelSx}>

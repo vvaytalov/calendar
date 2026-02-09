@@ -8,6 +8,7 @@
   MenuItem,
   Paper,
   Select,
+  Skeleton,
   Stack,
   TextField,
   Typography
@@ -24,6 +25,7 @@ interface BaseFormProps {
   onToggleWeekend: (day: DayNumber) => void;
   onCancel: () => void;
   onSave: () => void;
+  isLoading?: boolean;
 }
 
 export function BaseForm({
@@ -32,7 +34,8 @@ export function BaseForm({
   onToggleWeekday,
   onToggleWeekend,
   onCancel,
-  onSave
+  onSave,
+  isLoading = false
 }: BaseFormProps) {
   const hasWeekdayDates = Boolean(baseForm.weekdayFrom && baseForm.weekdayTo);
   const hasWeekdayDays = baseForm.weekdayDays.length > 0;
@@ -54,6 +57,72 @@ export function BaseForm({
       borderColor: '#22C55E'
     }
   } as const;
+
+  if (isLoading) {
+    return (
+      <Paper elevation={0} sx={panelSx}>
+        <Stack spacing={1.25}>
+          <Skeleton variant="text" width="55%" height={18} />
+
+          <Stack spacing={0.5}>
+            <Skeleton variant="text" width="20%" height={14} />
+            <Stack direction="row" spacing={0.75}>
+              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
+              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
+            </Stack>
+          </Stack>
+
+          <Stack spacing={0.5}>
+            <Skeleton variant="text" width="20%" height={14} />
+            <Stack direction="row" spacing={0.75}>
+              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
+              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
+            </Stack>
+          </Stack>
+
+          <Skeleton variant="rounded" height={32} />
+
+          <Stack spacing={0.5}>
+            <Skeleton variant="text" width="20%" height={14} />
+            <Stack direction="row" spacing={0.5} flexWrap="wrap" rowGap={0.5}>
+              {Array.from({ length: 7 }).map((_, index) => (
+                <Skeleton key={`weekday-skel-${index}`} variant="rounded" width={32} height={16} />
+              ))}
+            </Stack>
+          </Stack>
+
+          <Skeleton variant="rounded" height={36} />
+
+          <Divider />
+          <Skeleton variant="text" width="55%" height={18} />
+
+          <Stack spacing={0.5}>
+            <Skeleton variant="text" width="20%" height={14} />
+            <Stack direction="row" spacing={0.75}>
+              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
+              <Skeleton variant="rounded" height={36} sx={{ flex: 1 }} />
+            </Stack>
+          </Stack>
+
+          <Stack spacing={0.5}>
+            <Skeleton variant="text" width="20%" height={14} />
+            <Stack direction="row" spacing={0.5} flexWrap="wrap" rowGap={0.5}>
+              {Array.from({ length: 2 }).map((_, index) => (
+                <Skeleton key={`weekend-skel-${index}`} variant="rounded" width={32} height={16} />
+              ))}
+            </Stack>
+          </Stack>
+
+          <Skeleton variant="rounded" height={36} />
+
+          <Stack direction="row" justifyContent="flex-end" spacing={0.75}>
+            <Skeleton variant="rounded" width={64} height={28} />
+            <Skeleton variant="rounded" width={88} height={28} />
+          </Stack>
+        </Stack>
+      </Paper>
+    );
+  }
 
   return (
     <Paper elevation={0} sx={panelSx}>
