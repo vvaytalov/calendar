@@ -8,6 +8,7 @@ interface BaseCardsProps {
   items: BaseCard[];
   selectedIds: string[];
   isEditDisabled: boolean;
+  isActionsDisabled: boolean;
   onToggle: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
@@ -17,6 +18,7 @@ export function BaseCards({
   items,
   selectedIds,
   isEditDisabled,
+  isActionsDisabled,
   onToggle,
   onEdit,
   onDelete
@@ -138,15 +140,20 @@ export function BaseCards({
                     <Stack direction="row" spacing={0.25} alignItems="center">
                       <IconButton
                         size="small"
-                        disabled={isEditDisabled}
+                        disabled={isEditDisabled || isActionsDisabled}
                         onClick={() => onEdit(item.id)}
                       >
                         <EditOutlined
-                          sx={{ fontSize: 18, color: isEditDisabled ? '#D1D5DB' : '#9CA3AF' }}
+                          sx={{
+                            fontSize: 18,
+                            color: isEditDisabled || isActionsDisabled ? '#D1D5DB' : '#9CA3AF'
+                          }}
                         />
                       </IconButton>
-                      <IconButton size="small" onClick={() => onDelete(item.id)}>
-                        <DeleteOutline sx={{ fontSize: 18, color: '#9CA3AF' }} />
+                      <IconButton size="small" disabled={isActionsDisabled} onClick={() => onDelete(item.id)}>
+                        <DeleteOutline
+                          sx={{ fontSize: 18, color: isActionsDisabled ? '#D1D5DB' : '#9CA3AF' }}
+                        />
                       </IconButton>
                     </Stack>
                   </Stack>
@@ -197,15 +204,20 @@ export function BaseCards({
                   <Stack direction="row" spacing={0.25} alignItems="center">
                     <IconButton
                       size="small"
-                      disabled={isEditDisabled}
+                      disabled={isEditDisabled || isActionsDisabled}
                       onClick={() => onEdit(item.id)}
                     >
                       <EditOutlined
-                        sx={{ fontSize: 18, color: isEditDisabled ? '#D1D5DB' : '#9CA3AF' }}
+                        sx={{
+                          fontSize: 18,
+                          color: isEditDisabled || isActionsDisabled ? '#D1D5DB' : '#9CA3AF'
+                        }}
                       />
                     </IconButton>
-                    <IconButton size="small" onClick={() => onDelete(item.id)}>
-                      <DeleteOutline sx={{ fontSize: 18, color: '#9CA3AF' }} />
+                    <IconButton size="small" disabled={isActionsDisabled} onClick={() => onDelete(item.id)}>
+                      <DeleteOutline
+                        sx={{ fontSize: 18, color: isActionsDisabled ? '#D1D5DB' : '#9CA3AF' }}
+                      />
                     </IconButton>
                   </Stack>
                 </Stack>

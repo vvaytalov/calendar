@@ -343,94 +343,88 @@ export class SchedulePageStore {
   }
 
   deleteBase(id: string) {
-    this.requestConfirm({
-      title: 'Удалить расписание?',
-      description: 'Запись будет удалена без возможности восстановления.',
-      onConfirm: async () => {
-        await this.dataStore.removeBase(id);
-        runInAction(() => {
-          this.selectedBaseIds = this.selectedBaseIds.filter((item) => item !== id);
-          this.notice = 'Расписание удалено';
-        });
-      }
-    });
+    this.openDeleteDialog([id], []);
   }
 
   deleteSpecial(id: string) {
-    this.requestConfirm({
-      title: 'Удалить расписание?',
-      description: 'Запись будет удалена без возможности восстановления.',
-      onConfirm: async () => {
-        await this.dataStore.removeSpecial(id);
-        runInAction(() => {
-          this.selectedSpecialIds = this.selectedSpecialIds.filter((item) => item !== id);
-          this.notice = 'Расписание удалено';
-        });
-      }
-    });
+    this.openDeleteDialog([], [id]);
   }
 
   deleteSelected() {
     if (this.selectedCount === 0) return;
-
-    this.requestConfirm({
-      title: 'Удалить выбранные расписания?',
-      description: 'Выбранные записи будут удалены без возможности восстановления.',
-      confirmLabel: 'Удалить выбранные',
-      onConfirm: async () => {
-        await Promise.all([
-          ...this.selectedBaseIds.map((id) => this.dataStore.removeBase(id)),
-          ...this.selectedSpecialIds.map((id) => this.dataStore.removeSpecial(id))
-        ]);
-        runInAction(() => {
-          this.notice = 'Выбранные расписания удалены';
-          this.clearSelections();
-        });
-      }
-    });
+    this.openDeleteDialog(this.selectedBaseIds, this.selectedSpecialIds, 'Удалить выбранные');
   }
 
   clearAll() {
-    const details = this.buildClearAllDetails();
+    const allBaseIds = this.dataStore.baseSchedules.map((item) => item.id);
+    const allSpecialIds = this.dataStore.specialSchedules.map((item) => item.id);
+    this.openDeleteDialog(allBaseIds, allSpecialIds, 'Удалить все');
+  }
+
+  private openDeleteDialog(
+    baseIds: string[],
+    specialIds: string[],
+    confirmLabel: string = 'Удалить'
+  ) {
+    const details = this.buildDetailsForIds(baseIds, specialIds);
 
     this.requestConfirm({
       title: 'Удаление',
-      description: 'Вы уверены, что хотите удалить все режимы работы:',
-      confirmLabel: 'Удалить все',
+      description: 'Вы уверены, что хотите удалить режимы работы:',
+      confirmLabel,
       details,
       reasonLabel: 'Причина удаления',
       reasonPlaceholder: 'Опишите причину удаления (например, обновление графика или ошибочная загрузка).',
       onConfirm: async () => {
-        await this.dataStore.clearAll();
+        await Promise.all([
+          ...baseIds.map((id) => this.dataStore.removeBase(id)),
+          ...specialIds.map((id) => this.dataStore.removeSpecial(id))
+        ]);
         runInAction(() => {
-          this.notice = 'Все расписания удалены';
-          this.clearSelections();
+          this.notice =
+            confirmLabel === 'Удалить все'
+              ? 'Все расписания удалены'
+              : confirmLabel === 'Удалить выбранные'
+                ? 'Выбранные расписания удалены'
+                : 'Расписание удалено';
+          this.selectedBaseIds = this.selectedBaseIds.filter((id) => !baseIds.includes(id));
+          this.selectedSpecialIds = this.selectedSpecialIds.filter((id) => !specialIds.includes(id));
         });
       }
     });
   }
 
-  private buildClearAllDetails(): { base: string[]; special: string[] } {
+  private buildDetailsForIds(baseIds: string[], specialIds: string[]): {
+    base: string[];
+    special: string[];
+  } {
+    const baseSet = new Set(baseIds);
+    const specialSet = new Set(specialIds);
+
     return {
-      base: this.dataStore.baseSchedules.map((item) => {
-        const fromLabel = this.formatDateFull(item.validFrom);
-        const toLabel = this.formatDateFull(item.validTo);
-        const daysLabel = this.formatDaysLabel(item.daysOfWeek);
-        return `${fromLabel} - ${toLabel} (${daysLabel} ${item.timeFrom} - ${item.timeTo})`;
-      }),
-      special: this.dataStore.specialSchedules.map((item) => {
-        const from = new Date(item.dateFrom);
-        const to = new Date(item.dateTo);
-        const fromLabel = this.formatDateFull(from);
-        const toLabel = this.formatDateFull(to);
-        const days = Math.max(1, Math.ceil((to.getTime() - from.getTime()) / 86400000) + 1);
-        const dateLabel =
-          fromLabel === toLabel
-            ? `${fromLabel} (${days} дн.)`
-            : `${fromLabel} - ${toLabel} (${days} дн.)`;
-        const timeLabel = `${from.toISOString().slice(11, 16)} - ${to.toISOString().slice(11, 16)}`;
-        return `${dateLabel} - ${timeLabel}`;
-      })
+      base: this.dataStore.baseSchedules
+        .filter((item) => baseSet.has(item.id))
+        .map((item) => {
+          const fromLabel = this.formatDateFull(item.validFrom);
+          const toLabel = this.formatDateFull(item.validTo);
+          const daysLabel = this.formatDaysLabel(item.daysOfWeek);
+          return `${fromLabel} - ${toLabel} (${daysLabel} ${item.timeFrom} - ${item.timeTo})`;
+        }),
+      special: this.dataStore.specialSchedules
+        .filter((item) => specialSet.has(item.id))
+        .map((item) => {
+          const from = new Date(item.dateFrom);
+          const to = new Date(item.dateTo);
+          const fromLabel = this.formatDateFull(from);
+          const toLabel = this.formatDateFull(to);
+          const days = Math.max(1, Math.ceil((to.getTime() - from.getTime()) / 86400000) + 1);
+          const dateLabel =
+            fromLabel === toLabel
+              ? `${fromLabel} (${days} дн.)`
+              : `${fromLabel} - ${toLabel} (${days} дн.)`;
+          const timeLabel = `${from.toISOString().slice(11, 16)} - ${to.toISOString().slice(11, 16)}`;
+          return `${dateLabel} - ${timeLabel}`;
+        })
     };
   }
 

@@ -171,6 +171,7 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
         items={store.baseCards}
         selectedIds={store.selectedBaseIds}
         isEditDisabled={store.isMultiSelect}
+        isActionsDisabled={store.allSelected}
         onToggle={store.toggleBaseSelection}
         onEdit={store.editBaseById}
         onDelete={store.deleteBase}
@@ -179,6 +180,7 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
         items={store.specialCards}
         selectedIds={store.selectedSpecialIds}
         isEditDisabled={store.isMultiSelect}
+        isActionsDisabled={store.allSelected}
         onToggle={store.toggleSpecialSelection}
         onEdit={store.editSpecialById}
         onDelete={store.deleteSpecial}

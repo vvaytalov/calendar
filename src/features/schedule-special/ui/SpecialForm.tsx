@@ -28,6 +28,8 @@ export function SpecialForm({
   onCancel,
   onSave
 }: SpecialFormProps) {
+  const canSave = Boolean(specialForm.dateFrom && specialForm.dateTo);
+
   const fieldSx = {
     '& .MuiOutlinedInput-root': {
       borderRadius: '8px',
@@ -128,6 +130,7 @@ export function SpecialForm({
           <Button
             size="small"
             variant="contained"
+            disabled={!canSave}
             sx={{
               borderRadius: '8px',
               backgroundColor: '#22C55E',

@@ -17,6 +17,7 @@ interface SpecialCardsProps {
   items: SpecialCard[];
   selectedIds: string[];
   isEditDisabled: boolean;
+  isActionsDisabled: boolean;
   onToggle: (id: string) => void;
   onEdit: (id: string) => void;
   onDelete: (id: string) => void;
@@ -26,6 +27,7 @@ export function SpecialCards({
   items,
   selectedIds,
   isEditDisabled,
+  isActionsDisabled,
   onToggle,
   onEdit,
   onDelete
@@ -133,13 +135,22 @@ export function SpecialCards({
                   )}
                 </Stack>
                 <Stack direction="row" spacing={0.25} alignItems="center">
-                  <IconButton size="small" disabled={isEditDisabled} onClick={() => onEdit(item.id)}>
+                  <IconButton
+                    size="small"
+                    disabled={isEditDisabled || isActionsDisabled}
+                    onClick={() => onEdit(item.id)}
+                  >
                     <EditOutlined
-                      sx={{ fontSize: 18, color: isEditDisabled ? '#D1D5DB' : '#9CA3AF' }}
+                      sx={{
+                        fontSize: 18,
+                        color: isEditDisabled || isActionsDisabled ? '#D1D5DB' : '#9CA3AF'
+                      }}
                     />
                   </IconButton>
-                  <IconButton size="small" onClick={() => onDelete(item.id)}>
-                    <DeleteOutline sx={{ fontSize: 18, color: '#9CA3AF' }} />
+                  <IconButton size="small" disabled={isActionsDisabled} onClick={() => onDelete(item.id)}>
+                    <DeleteOutline
+                      sx={{ fontSize: 18, color: isActionsDisabled ? '#D1D5DB' : '#9CA3AF' }}
+                    />
                   </IconButton>
                 </Stack>
               </Box>

@@ -34,6 +34,14 @@ export function BaseForm({
   onCancel,
   onSave
 }: BaseFormProps) {
+  const hasWeekdayDates = Boolean(baseForm.weekdayFrom && baseForm.weekdayTo);
+  const hasWeekdayDays = baseForm.weekdayDays.length > 0;
+  const hasWeekendDates = Boolean(baseForm.weekendFrom && baseForm.weekendTo);
+  const hasWeekendDays = baseForm.weekendDays.length > 0;
+  const canSave = baseForm.sameAsWeekdays
+    ? hasWeekdayDates && hasWeekdayDays
+    : hasWeekdayDates && hasWeekdayDays && hasWeekendDates && hasWeekendDays;
+
   const fieldSx = {
     '& .MuiOutlinedInput-root': {
       borderRadius: '8px',
@@ -200,6 +208,7 @@ export function BaseForm({
           <Button
             size="small"
             variant="contained"
+            disabled={!canSave}
             sx={{
               borderRadius: '8px',
               backgroundColor: '#22C55E',
