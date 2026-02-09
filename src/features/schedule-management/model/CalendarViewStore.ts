@@ -1,8 +1,8 @@
 ﻿import { makeAutoObservable } from 'mobx';
 import { MONTHS, WEEKDAYS } from '../../../shared/config/calendarConstants';
 import { CALENDAR_COLORS } from '../../../shared/config/calendarColors';
-import { dayNumber, getMonthCells, inRange, toDateKey } from '../../../entities/calendar/lib/utils';
-import type { BaseSchedule, SpecialSchedule } from '../../../entities/schedule/model/types';
+import { dayNumber, getMonthCells, toDateKey } from '../../../entities/calendar/lib/utils';
+import type { TimeTableEntry } from '../../../entities/schedule/model/types';
 import type {
   CalendarCell,
   CalendarLegendItem,
@@ -100,11 +100,7 @@ export class CalendarViewStore {
       };
     }
 
-    const status = this.resolveDayStatus(
-      cell,
-      this.dataStore.baseSchedules,
-      this.dataStore.specialSchedules
-    );
+    const status = this.resolveDayStatus(cell, this.dataStore.workTime, this.dataStore.specialTime);
     const isActive = status !== 'none';
     const color =
       status === 'special'
@@ -129,16 +125,18 @@ export class CalendarViewStore {
 
   private resolveDayStatus(
     date: Date,
-    baseSchedules: BaseSchedule[],
-    specialSchedules: SpecialSchedule[]
+    workTime: TimeTableEntry[],
+    specialTime: TimeTableEntry[]
   ): CalendarStatus {
-    const hasSpecial = specialSchedules.some((item) => inRange(date, item.dateFrom, item.dateTo));
+    const dateKey = toDateKey(date);
+    const hasSpecial = specialTime.some((item) => item.date && item.date === dateKey);
     if (hasSpecial) return 'special';
 
     const day = dayNumber(date);
-    const activeBase = baseSchedules.find(
-      (item) => inRange(date, item.validFrom, item.validTo) && item.daysOfWeek.includes(day)
-    );
+    const activeBase = workTime.find((item) => {
+      if (item.date) return item.date === dateKey;
+      return item.day === day;
+    });
 
     if (!activeBase) return 'none';
     return 'weekday';

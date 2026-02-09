@@ -1,17 +1,31 @@
-import type { SpecialSchedule } from './types';
+import type { TimeTableEntry } from './types';
 
-export const hasSpecialConflicts = (items: SpecialSchedule[]): boolean => {
-  const overrides = items.filter((item) => item.isOverrideBase);
-  for (let i = 0; i < overrides.length; i += 1) {
-    for (let j = i + 1; j < overrides.length; j += 1) {
-      const a = overrides[i];
-      const b = overrides[j];
-      const conflict =
-        a.priority === b.priority &&
-        new Date(a.dateFrom) < new Date(b.dateTo) &&
-        new Date(b.dateFrom) < new Date(a.dateTo);
+const toMinutes = (time: string): number => {
+  const [h, m] = time.split(':').map((part) => Number(part));
+  if (Number.isNaN(h) || Number.isNaN(m)) return 0;
+  return h * 60 + m;
+};
 
-      if (conflict) return true;
+export const hasSpecialConflicts = (items: TimeTableEntry[]): boolean => {
+  const byDate = new Map<string, TimeTableEntry[]>();
+  items.forEach((item) => {
+    if (!item.date) return;
+    const list = byDate.get(item.date) || [];
+    list.push(item);
+    byDate.set(item.date, list);
+  });
+
+  for (const entries of byDate.values()) {
+    for (let i = 0; i < entries.length; i += 1) {
+      const a = entries[i];
+      for (let j = i + 1; j < entries.length; j += 1) {
+        const b = entries[j];
+        const aStart = toMinutes(a.openTime);
+        const aEnd = toMinutes(a.closeTime);
+        const bStart = toMinutes(b.openTime);
+        const bEnd = toMinutes(b.closeTime);
+        if (aStart < bEnd && bStart < aEnd) return true;
+      }
     }
   }
 

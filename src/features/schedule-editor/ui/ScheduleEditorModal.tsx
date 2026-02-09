@@ -1,4 +1,4 @@
-﻿import {
+import {
   Button,
   Checkbox,
   Dialog,
@@ -12,31 +12,34 @@
   Typography
 } from '@mui/material';
 import { useEffect, useState, type FormEvent } from 'react';
-import type {
-  BaseEditorForm,
-  ScheduleEditorForm,
-  ScheduleMode,
-  SpecialEditorForm
-} from '../../schedule-management/model/types';
+import type { ScheduleMode } from '../../schedule-management/model/types';
 import type { DayNumber, ScheduleKind } from '../../../entities/schedule/model/types';
 import { DAY_OPTIONS } from '../../../shared/config/calendarConstants';
 
-const defaultBase: BaseEditorForm = {
-  title: '',
-  timeFrom: '08:00',
-  timeTo: '20:00',
-  daysOfWeek: [1, 2, 3, 4, 5],
-  validFrom: new Date().toISOString().slice(0, 10),
-  validTo: null
+interface WorkEditorForm {
+  openTime: string;
+  closeTime: string;
+  daysOfWeek: DayNumber[];
+}
+
+interface SpecialEditorForm {
+  date: string;
+  openTime: string;
+  closeTime: string;
+}
+
+type ScheduleEditorForm = WorkEditorForm | SpecialEditorForm;
+
+const defaultBase: WorkEditorForm = {
+  openTime: '08:00',
+  closeTime: '20:00',
+  daysOfWeek: [1, 2, 3, 4, 5]
 };
 
 const defaultSpecial: SpecialEditorForm = {
-  title: '',
-  dateFrom: new Date().toISOString().slice(0, 16),
-  dateTo: new Date(Date.now() + 3600000).toISOString().slice(0, 16),
-  priority: 100,
-  reason: '',
-  isOverrideBase: true
+  date: new Date().toISOString().slice(0, 10),
+  openTime: '09:00',
+  closeTime: '18:00'
 };
 
 const dayOptions: Array<[DayNumber, string]> = DAY_OPTIONS.map((item) => [item.value, item.label]);
@@ -66,41 +69,23 @@ export function ScheduleEditorModal({
     if (!open) return;
 
     if (initialData) {
-      if (kind === 'special') {
-        const data = initialData as SpecialEditorForm;
-        setForm({
-          ...data,
-          dateFrom: data.dateFrom.slice(0, 16),
-          dateTo: data.dateTo.slice(0, 16)
-        });
-      } else {
-        setForm(initialData as BaseEditorForm);
-      }
+      setForm(initialData);
       return;
     }
 
     setForm(kind === 'base' ? defaultBase : defaultSpecial);
   }, [open, kind, initialData]);
 
-  const title = `${mode === 'create' ? 'Добавление' : 'Редактирование'} ${
-    kind === 'base' ? 'основного' : 'специального'
-  } расписания`;
+  const title = `${mode === 'create' ? 'Создать' : 'Редактировать'} ${
+    kind === 'base' ? 'рабочее' : 'специальное'
+  } расписание`;
 
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const payload =
-      kind === 'special'
-        ? {
-            ...(form as SpecialEditorForm),
-            dateFrom: new Date((form as SpecialEditorForm).dateFrom).toISOString(),
-            dateTo: new Date((form as SpecialEditorForm).dateTo).toISOString()
-          }
-        : (form as BaseEditorForm);
-
-    onSubmit(payload);
+    onSubmit(form);
   };
 
-  const baseForm = form as BaseEditorForm;
+  const baseForm = form as WorkEditorForm;
   const specialForm = form as SpecialEditorForm;
 
   return (
@@ -109,22 +94,14 @@ export function ScheduleEditorModal({
         <DialogTitle>{title}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField
-              label="Название"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              required
-              fullWidth
-            />
-
             {kind === 'base' ? (
               <>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField
                     label="Время начала"
                     type="time"
-                    value={baseForm.timeFrom}
-                    onChange={(e) => setForm({ ...baseForm, timeFrom: e.target.value })}
+                    value={baseForm.openTime}
+                    onChange={(e) => setForm({ ...baseForm, openTime: e.target.value })}
                     InputLabelProps={{ shrink: true }}
                     fullWidth
                     required
@@ -132,8 +109,8 @@ export function ScheduleEditorModal({
                   <TextField
                     label="Время окончания"
                     type="time"
-                    value={baseForm.timeTo}
-                    onChange={(e) => setForm({ ...baseForm, timeTo: e.target.value })}
+                    value={baseForm.closeTime}
+                    onChange={(e) => setForm({ ...baseForm, closeTime: e.target.value })}
                     InputLabelProps={{ shrink: true }}
                     fullWidth
                     required
@@ -164,48 +141,34 @@ export function ScheduleEditorModal({
             ) : (
               <>
                 <TextField
-                  label="Начало периода"
-                  type="datetime-local"
-                  value={specialForm.dateFrom}
-                  onChange={(e) => setForm({ ...specialForm, dateFrom: e.target.value })}
+                  label="Дата"
+                  type="date"
+                  value={specialForm.date}
+                  onChange={(e) => setForm({ ...specialForm, date: e.target.value })}
                   InputLabelProps={{ shrink: true }}
                   required
                   fullWidth
                 />
-                <TextField
-                  label="Конец периода"
-                  type="datetime-local"
-                  value={specialForm.dateTo}
-                  onChange={(e) => setForm({ ...specialForm, dateTo: e.target.value })}
-                  InputLabelProps={{ shrink: true }}
-                  required
-                  fullWidth
-                />
-                <TextField
-                  label="Приоритет"
-                  type="number"
-                  value={specialForm.priority}
-                  onChange={(e) => setForm({ ...specialForm, priority: Number(e.target.value) })}
-                  required
-                  fullWidth
-                />
-                <TextField
-                  label="Причина"
-                  value={specialForm.reason}
-                  onChange={(e) => setForm({ ...specialForm, reason: e.target.value })}
-                  fullWidth
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={specialForm.isOverrideBase}
-                      onChange={(e) =>
-                        setForm({ ...specialForm, isOverrideBase: e.target.checked })
-                      }
-                    />
-                  }
-                  label="Перекрыть основное расписание"
-                />
+                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                  <TextField
+                    label="Время начала"
+                    type="time"
+                    value={specialForm.openTime}
+                    onChange={(e) => setForm({ ...specialForm, openTime: e.target.value })}
+                    InputLabelProps={{ shrink: true }}
+                    required
+                    fullWidth
+                  />
+                  <TextField
+                    label="Время окончания"
+                    type="time"
+                    value={specialForm.closeTime}
+                    onChange={(e) => setForm({ ...specialForm, closeTime: e.target.value })}
+                    InputLabelProps={{ shrink: true }}
+                    required
+                    fullWidth
+                  />
+                </Stack>
               </>
             )}
           </Stack>

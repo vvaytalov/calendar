@@ -1,6 +1,5 @@
-﻿import {
+import {
   Button,
-  Chip,
   Stack,
   Table,
   TableBody,
@@ -10,11 +9,12 @@
   TableRow,
   Paper
 } from '@mui/material';
-import type { SpecialSchedule } from '../../../entities/schedule/model/types';
+import type { TimeTableEntry } from '../../../entities/schedule/model/types';
+import { formatDate } from '../../../shared/lib/dateFormat';
 
 interface SpecialScheduleTableProps {
-  items: SpecialSchedule[];
-  onEdit: (item: SpecialSchedule) => void;
+  items: TimeTableEntry[];
+  onEdit: (item: TimeTableEntry) => void;
   onDelete: (id: string) => void;
 }
 
@@ -24,28 +24,17 @@ export function SpecialScheduleTable({ items, onEdit, onDelete }: SpecialSchedul
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Название</TableCell>
-            <TableCell>Период</TableCell>
-            <TableCell>Приоритет</TableCell>
-            <TableCell>Перекрытие</TableCell>
+            <TableCell>Дата</TableCell>
+            <TableCell>Время</TableCell>
             <TableCell align="right">Действия</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {items.map((item) => (
             <TableRow key={item.id} hover>
-              <TableCell>{item.title}</TableCell>
+              <TableCell>{item.date ? formatDate(item.date) : '-'}</TableCell>
               <TableCell>
-                {new Date(item.dateFrom).toLocaleString()} -{' '}
-                {new Date(item.dateTo).toLocaleString()}
-              </TableCell>
-              <TableCell>{item.priority}</TableCell>
-              <TableCell>
-                <Chip
-                  size="small"
-                  color={item.isOverrideBase ? 'warning' : 'default'}
-                  label={item.isOverrideBase ? 'Да' : 'Нет'}
-                />
+                {item.openTime} - {item.closeTime}
               </TableCell>
               <TableCell align="right">
                 <Stack direction="row" spacing={1} justifyContent="flex-end">

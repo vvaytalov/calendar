@@ -1,5 +1,4 @@
-﻿import {
-  Box,
+import {
   Button,
   Dialog,
   DialogActions,
@@ -45,6 +44,8 @@ export function ConfirmDialog({
   }, [open]);
 
   const hasDetails = !!details && (details.base.length > 0 || details.special.length > 0);
+  const hasBase = !!details && details.base.length > 0;
+  const hasSpecial = !!details && details.special.length > 0;
 
   return (
     <Dialog
@@ -56,50 +57,37 @@ export function ConfirmDialog({
     >
       <DialogTitle sx={{ fontSize: 15, fontWeight: 700 }}>{title}</DialogTitle>
       <DialogContent>
-        <Stack spacing={1.25}>
-          <Typography sx={{ fontSize: 12, color: '#6B7280' }}>{description}</Typography>
+        <Stack spacing={1}>
+          <Typography sx={{ fontSize: 12, color: '#111827' }}>{description}</Typography>
 
           {hasDetails && (
-            <Box
-              sx={{
-                borderRadius: '12px',
-                border: '1px solid #E5E7EB',
-                backgroundColor: '#F8FAFC',
-                p: 1
-              }}
-            >
-              <Stack spacing={1}>
-                {details.base.length > 0 && (
-                  <Stack spacing={0.5}>
-                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>
-                      Основное расписание
+            <Stack spacing={0.75}>
+              {hasBase && (
+                <Stack spacing={0.35}>
+                  <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>
+                    Основное расписание:
+                  </Typography>
+                  {details.base.map((line) => (
+                    <Typography key={line} sx={{ fontSize: 11, color: '#4B5563' }}>
+                      {line}
                     </Typography>
-                    <Stack spacing={0.35}>
-                      {details.base.map((line) => (
-                        <Typography key={line} sx={{ fontSize: 11, color: '#4B5563' }}>
-                          {line}
-                        </Typography>
-                      ))}
-                    </Stack>
-                  </Stack>
-                )}
+                  ))}
+                </Stack>
+              )}
 
-                {details.special.length > 0 && (
-                  <Stack spacing={0.5}>
-                    <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>
-                      Специальное расписание
+              {hasSpecial && (
+                <Stack spacing={0.35}>
+                  <Typography sx={{ fontSize: 12, fontWeight: 700, color: '#111827' }}>
+                    Специальное расписание:
+                  </Typography>
+                  {details.special.map((line) => (
+                    <Typography key={line} sx={{ fontSize: 11, color: '#4B5563' }}>
+                      {line}
                     </Typography>
-                    <Stack spacing={0.35}>
-                      {details.special.map((line) => (
-                        <Typography key={line} sx={{ fontSize: 11, color: '#4B5563' }}>
-                          {line}
-                        </Typography>
-                      ))}
-                    </Stack>
-                  </Stack>
-                )}
-              </Stack>
-            </Box>
+                  ))}
+                </Stack>
+              )}
+            </Stack>
           )}
 
           {reasonLabel && (

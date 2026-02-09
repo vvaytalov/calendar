@@ -1,4 +1,4 @@
-﻿import {
+import {
   Box,
   Card,
   CardContent,
@@ -18,9 +18,9 @@ interface SpecialCardsProps {
   selectedIds: string[];
   isEditDisabled: boolean;
   isActionsDisabled: boolean;
-  onToggle: (id: string) => void;
-  onEdit: (id: string) => void;
-  onDelete: (id: string) => void;
+  onToggle: (ids: string[]) => void;
+  onEdit: (ids: string[]) => void;
+  onDelete: (ids: string[]) => void;
 }
 
 export function SpecialCards({
@@ -98,63 +98,70 @@ export function SpecialCards({
                 Специальное расписание
               </Typography>
             </Stack>
-            {items.map((item, index) => (
-              <Box
-                key={item.id}
-                ref={(node) => {
-                  cardRefs.current[index] = node;
-                }}
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'auto 1fr auto',
-                  alignItems: 'start',
-                  gap: 1,
-                  py: 0.5,
-                  borderTop: index === 0 ? 'none' : '1px solid #F1F5F9'
-                }}
-              >
-                <Checkbox
-                  size="small"
-                  checked={selectedIds.includes(item.id)}
-                  onChange={() => onToggle(item.id)}
-                  sx={{
-                    mt: 0.2,
-                    color: '#D1D5DB',
-                    '&.Mui-checked': { color: '#F59E0B' }
+            {items.map((item, index) => {
+              const selectedCount = item.ids.filter((id) => selectedIds.includes(id)).length;
+              const isChecked = selectedCount === item.ids.length && item.ids.length > 0;
+              const isIndeterminate = selectedCount > 0 && !isChecked;
+              return (
+                <Box
+                  key={item.id}
+                  ref={(node) => {
+                    cardRefs.current[index] = node;
                   }}
-                />
-                <Stack spacing={0.2}>
-                  <Typography sx={{ fontSize: 11, color: '#6B7280' }}>{item.dateLabel}</Typography>
-                  <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#F59E0B' }}>
-                    {item.timeLabel}
-                  </Typography>
-                  {!!item.reasonLabel && (
-                    <Typography sx={{ fontSize: 11, color: '#9CA3AF' }}>
-                      {item.reasonLabel}
-                    </Typography>
-                  )}
-                </Stack>
-                <Stack direction="row" spacing={0.25} alignItems="center">
-                  <IconButton
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'auto 1fr auto',
+                    alignItems: 'start',
+                    gap: 1,
+                    py: 0.5,
+                    borderTop: index === 0 ? 'none' : '1px solid #F1F5F9'
+                  }}
+                >
+                  <Checkbox
                     size="small"
-                    disabled={isEditDisabled || isActionsDisabled}
-                    onClick={() => onEdit(item.id)}
-                  >
-                    <EditOutlined
-                      sx={{
-                        fontSize: 18,
-                        color: isEditDisabled || isActionsDisabled ? '#D1D5DB' : '#9CA3AF'
-                      }}
-                    />
-                  </IconButton>
-                  <IconButton size="small" disabled={isActionsDisabled} onClick={() => onDelete(item.id)}>
-                    <DeleteOutline
-                      sx={{ fontSize: 18, color: isActionsDisabled ? '#D1D5DB' : '#9CA3AF' }}
-                    />
-                  </IconButton>
-                </Stack>
-              </Box>
-            ))}
+                    checked={isChecked}
+                    indeterminate={isIndeterminate}
+                    onChange={() => onToggle(item.ids)}
+                    sx={{
+                      mt: 0.2,
+                      color: '#D1D5DB',
+                      '&.Mui-checked': { color: '#F59E0B' }
+                    }}
+                  />
+                  <Stack spacing={0.2}>
+                    <Typography sx={{ fontSize: 11, color: '#6B7280' }}>
+                      {item.dateLabel}
+                    </Typography>
+                    <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#F59E0B' }}>
+                      {item.timeLabel}
+                    </Typography>
+                  </Stack>
+                  <Stack direction="row" spacing={0.25} alignItems="center">
+                    <IconButton
+                      size="small"
+                      disabled={isEditDisabled || isActionsDisabled}
+                      onClick={() => onEdit(item.ids)}
+                    >
+                      <EditOutlined
+                        sx={{
+                          fontSize: 18,
+                          color: isEditDisabled || isActionsDisabled ? '#D1D5DB' : '#9CA3AF'
+                        }}
+                      />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      disabled={isActionsDisabled}
+                      onClick={() => onDelete(item.ids)}
+                    >
+                      <DeleteOutline
+                        sx={{ fontSize: 18, color: isActionsDisabled ? '#D1D5DB' : '#9CA3AF' }}
+                      />
+                    </IconButton>
+                  </Stack>
+                </Box>
+              );
+            })}
           </Stack>
         </CardContent>
       </Card>

@@ -1,10 +1,11 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { ScheduleModel } from './ScheduleModel';
-import type { BaseSchedulePayload, ScheduleResponse, SpecialSchedulePayload } from './types';
+import type { TimeTableEntry, TimeTableEntryApi, TimeTableZone, TimeTableZoneApi } from './types';
 import type { ScheduleRepository } from '../api/ScheduleRepository';
+import { DAY_LABEL } from '../../../shared/config/calendarConstants';
 
 export class ZoneScheduleStore {
-  zoneCode = 'zone24';
+  zoneId = 'zone24';
   model = new ScheduleModel();
   loading = false;
   saving = false;
@@ -16,12 +17,12 @@ export class ZoneScheduleStore {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  get baseSchedules() {
-    return this.model.baseList;
+  get workTime(): TimeTableEntry[] {
+    return this.model.workTime;
   }
 
-  get specialSchedules() {
-    return this.model.specialList;
+  get specialTime(): TimeTableEntry[] {
+    return this.model.specialTime;
   }
 
   get hasConflicts() {
@@ -32,9 +33,12 @@ export class ZoneScheduleStore {
     this.loading = true;
     this.error = null;
     try {
-      const data: ScheduleResponse = await this.repository.getSchedules(this.zoneCode);
+      const data = await this.repository.getZoneTimeTable(this.zoneId);
+      const zone = this.pickZone(data);
+      const normalized = this.normalizeZone(zone);
       runInAction(() => {
-        this.model.setData(data.base, data.special);
+        this.model.setZone(normalized);
+        this.zoneId = normalized.id;
       });
     } catch (e: unknown) {
       runInAction(() => {
@@ -47,53 +51,222 @@ export class ZoneScheduleStore {
     }
   }
 
-  async addBase(payload: BaseSchedulePayload): Promise<void> {
+  async addWorkEntries(entries: TimeTableEntry[]): Promise<void> {
     await this.wrapSaving(async () => {
-      const created = await this.repository.createBase(this.zoneCode, payload);
-      this.model.baseById.set(created.id, created);
+      this.model.setZone({
+        id: this.zoneId,
+        workTime: [...this.workTime, ...entries],
+        specialTime: this.specialTime
+      });
+      await this.save();
     });
   }
 
-  async editBase(id: string, payload: BaseSchedulePayload): Promise<void> {
+  async replaceWorkEntry(id: string, entries: TimeTableEntry[]): Promise<void> {
     await this.wrapSaving(async () => {
-      const updated = await this.repository.updateBase(this.zoneCode, id, payload);
-      this.model.baseById.set(updated.id, updated);
+      const next = this.workTime.filter((item) => item.id !== id);
+      this.model.setZone({
+        id: this.zoneId,
+        workTime: [...next, ...entries],
+        specialTime: this.specialTime
+      });
+      await this.save();
     });
   }
 
-  async removeBase(id: string): Promise<void> {
+  async replaceWorkEntries(ids: string[], entries: TimeTableEntry[]): Promise<void> {
     await this.wrapSaving(async () => {
-      await this.repository.deleteBase(this.zoneCode, id);
-      this.model.baseById.delete(id);
+      const idSet = new Set(ids);
+      const next = this.workTime.filter((item) => !idSet.has(item.id));
+      this.model.setZone({
+        id: this.zoneId,
+        workTime: [...next, ...entries],
+        specialTime: this.specialTime
+      });
+      await this.save();
     });
   }
 
-  async addSpecial(payload: SpecialSchedulePayload): Promise<void> {
+  async removeWorkEntry(id: string): Promise<void> {
     await this.wrapSaving(async () => {
-      const created = await this.repository.createSpecial(this.zoneCode, payload);
-      this.model.specialById.set(created.id, created);
+      this.model.setZone({
+        id: this.zoneId,
+        workTime: this.workTime.filter((item) => item.id !== id),
+        specialTime: this.specialTime
+      });
+      await this.save();
     });
   }
 
-  async editSpecial(id: string, payload: SpecialSchedulePayload): Promise<void> {
+  async addSpecialEntries(entries: TimeTableEntry[]): Promise<void> {
     await this.wrapSaving(async () => {
-      const updated = await this.repository.updateSpecial(this.zoneCode, id, payload);
-      this.model.specialById.set(updated.id, updated);
+      this.model.setZone({
+        id: this.zoneId,
+        workTime: this.workTime,
+        specialTime: [...this.specialTime, ...entries]
+      });
+      await this.save();
     });
   }
 
-  async removeSpecial(id: string): Promise<void> {
+  async replaceSpecialEntry(id: string, entries: TimeTableEntry[]): Promise<void> {
     await this.wrapSaving(async () => {
-      await this.repository.deleteSpecial(this.zoneCode, id);
-      this.model.specialById.delete(id);
+      const next = this.specialTime.filter((item) => item.id !== id);
+      this.model.setZone({
+        id: this.zoneId,
+        workTime: this.workTime,
+        specialTime: [...next, ...entries]
+      });
+      await this.save();
+    });
+  }
+
+  async replaceSpecialEntries(ids: string[], entries: TimeTableEntry[]): Promise<void> {
+    await this.wrapSaving(async () => {
+      const idSet = new Set(ids);
+      const next = this.specialTime.filter((item) => !idSet.has(item.id));
+      this.model.setZone({
+        id: this.zoneId,
+        workTime: this.workTime,
+        specialTime: [...next, ...entries]
+      });
+      await this.save();
+    });
+  }
+
+  async removeSpecialEntry(id: string): Promise<void> {
+    await this.wrapSaving(async () => {
+      this.model.setZone({
+        id: this.zoneId,
+        workTime: this.workTime,
+        specialTime: this.specialTime.filter((item) => item.id !== id)
+      });
+      await this.save();
     });
   }
 
   async clearAll(): Promise<void> {
     await this.wrapSaving(async () => {
-      await this.repository.clearAll(this.zoneCode);
-      this.model.setData([], []);
+      this.model.setZone({
+        id: this.zoneId,
+        workTime: [],
+        specialTime: []
+      });
+      await this.save();
     });
+  }
+
+  private async save(): Promise<void> {
+    const payload = [this.toApi(this.model.zone)];
+    await this.repository.saveZoneTimeTable(payload);
+  }
+
+  private pickZone(items: TimeTableZoneApi[]): TimeTableZoneApi {
+    if (items.length === 0) return { id: this.zoneId, workTime: [], specialTime: [] };
+    const found = items.find((item) => item.id === this.zoneId);
+    return found || items[0];
+  }
+
+  private normalizeZone(zone: TimeTableZoneApi): TimeTableZone {
+    return {
+      id: zone.id,
+      workTime: (zone.workTime || []).map((item, index) =>
+        this.normalizeEntry('work', item, index)
+      ),
+      specialTime: (zone.specialTime || []).map((item, index) =>
+        this.normalizeEntry('special', item, index)
+      )
+    };
+  }
+
+  private normalizeEntry(
+    kind: 'work' | 'special',
+    entry: TimeTableEntryApi,
+    index: number
+  ): TimeTableEntry {
+    return {
+      id: `${kind}-${index}-${entry.day || 'x'}-${entry.date || 'x'}`,
+      day: this.parseDay(entry.day),
+      date: entry.date || null,
+      openTime: entry.openTime || '00:00',
+      closeTime: entry.closeTime || '00:00'
+    };
+  }
+
+  private toApi(zone: TimeTableZone | null): TimeTableZoneApi {
+    if (!zone) return { id: this.zoneId, workTime: [], specialTime: [] };
+    return {
+      id: zone.id,
+      workTime: zone.workTime.map((item) => this.toEntryApi(item)),
+      specialTime: zone.specialTime.map((item) => this.toEntryApi(item))
+    };
+  }
+
+  private toEntryApi(entry: TimeTableEntry): TimeTableEntryApi {
+    const dayLabel = this.resolveDayLabel(entry);
+    return {
+      day: dayLabel || undefined,
+      date: entry.date || undefined,
+      openTime: entry.openTime,
+      closeTime: entry.closeTime
+    };
+  }
+
+  private resolveDayLabel(entry: TimeTableEntry): string | null {
+    if (entry.day) return DAY_LABEL[entry.day];
+    if (entry.date) {
+      const date = new Date(entry.date);
+      if (!Number.isNaN(date.getTime())) {
+        const jsDay = date.getDay(); // 0..6 (Sun..Sat)
+        const dayNumber = (((jsDay + 6) % 7) + 1) as TimeTableEntry['day'];
+        if (dayNumber) return DAY_LABEL[dayNumber];
+      }
+    }
+    return null;
+  }
+
+  private parseDay(value?: string): TimeTableEntry['day'] {
+    if (!value) return null;
+    const trimmed = value.trim().toLowerCase();
+    const numeric = Number(trimmed);
+    if (numeric >= 1 && numeric <= 7) return numeric as TimeTableEntry['day'];
+    const map: Record<string, TimeTableEntry['day']> = {
+      пн: 1,
+      пон: 1,
+      понедельник: 1,
+      вт: 2,
+      втор: 2,
+      вторник: 2,
+      ср: 3,
+      среда: 3,
+      чт: 4,
+      чет: 4,
+      четверг: 4,
+      пт: 5,
+      пят: 5,
+      пятница: 5,
+      сб: 6,
+      суб: 6,
+      суббота: 6,
+      вс: 7,
+      воск: 7,
+      воскресенье: 7,
+      mon: 1,
+      monday: 1,
+      tue: 2,
+      tuesday: 2,
+      wed: 3,
+      wednesday: 3,
+      thu: 4,
+      thursday: 4,
+      fri: 5,
+      friday: 5,
+      sat: 6,
+      saturday: 6,
+      sun: 7,
+      sunday: 7
+    };
+    return map[trimmed] ?? null;
   }
 
   private async wrapSaving(callback: () => Promise<void>): Promise<void> {

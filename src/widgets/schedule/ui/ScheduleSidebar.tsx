@@ -91,17 +91,10 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
                 }
               }}
             >
-              <MenuItem value="base" disabled={store.hasBaseSchedules}>
-                Основное расписание
-              </MenuItem>
+              <MenuItem value="base">Основное расписание</MenuItem>
               <MenuItem value="special">Специальное расписание</MenuItem>
             </Select>
           </FormControl>
-          {store.hasBaseSchedules && (
-            <Typography sx={{ fontSize: 10, color: '#94A3B8', mt: 0.5 }}>
-              Основное расписание уже создано. Можно добавить только специальное.
-            </Typography>
-          )}
         </Paper>
       )}
 
@@ -167,7 +160,7 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
             isEditDisabled={store.isMultiSelect}
             isActionsDisabled={store.allSelected}
             onToggle={store.toggleBaseSelection}
-            onEdit={store.editBaseById}
+            onEdit={store.editBaseCard}
             onDelete={store.deleteBase}
           />
           <SpecialCards
@@ -176,7 +169,7 @@ export const ScheduleSidebar = observer(({ store }: ScheduleSidebarProps) => {
             isEditDisabled={store.isMultiSelect}
             isActionsDisabled={store.allSelected}
             onToggle={store.toggleSpecialSelection}
-            onEdit={store.editSpecialById}
+            onEdit={store.editSpecialByIds}
             onDelete={store.deleteSpecial}
           />
         </>

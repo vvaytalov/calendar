@@ -1,4 +1,4 @@
-﻿import {
+import {
   TableContainer,
   Table,
   TableHead,
@@ -7,26 +7,25 @@
   TableCell,
   Paper,
   Stack,
-  Chip,
   Button
 } from '@mui/material';
-import type { BaseSchedule, DayNumber } from '../../../entities/schedule/model/types';
+import type { DayNumber, TimeTableEntry } from '../../../entities/schedule/model/types';
+import { DAY_LABEL } from '../../../shared/config/calendarConstants';
+import { formatDate } from '../../../shared/lib/dateFormat';
 
-const dayLabels: Record<DayNumber, string> = {
-  1: 'Пн',
-  2: 'Вт',
-  3: 'Ср',
-  4: 'Чт',
-  5: 'Пт',
-  6: 'Сб',
-  7: 'Вс'
-};
+const dayLabels: Record<DayNumber, string> = DAY_LABEL;
 
 interface BaseScheduleTableProps {
-  items: BaseSchedule[];
-  onEdit: (item: BaseSchedule) => void;
+  items: TimeTableEntry[];
+  onEdit: (item: TimeTableEntry) => void;
   onDelete: (id: string) => void;
 }
+
+const formatDay = (item: TimeTableEntry): string => {
+  if (item.date) return formatDate(item.date);
+  if (item.day) return dayLabels[item.day] || String(item.day);
+  return '-';
+};
 
 export function BaseScheduleTable({ items, onEdit, onDelete }: BaseScheduleTableProps) {
   return (
@@ -34,25 +33,17 @@ export function BaseScheduleTable({ items, onEdit, onDelete }: BaseScheduleTable
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>Название</TableCell>
+            <TableCell>День</TableCell>
             <TableCell>Время</TableCell>
-            <TableCell>Дни</TableCell>
             <TableCell align="right">Действия</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {items.map((item) => (
             <TableRow key={item.id} hover>
-              <TableCell>{item.title}</TableCell>
+              <TableCell>{formatDay(item)}</TableCell>
               <TableCell>
-                {item.timeFrom} - {item.timeTo}
-              </TableCell>
-              <TableCell>
-                <Stack direction="row" spacing={0.5} flexWrap="wrap" useFlexGap>
-                  {item.daysOfWeek.map((day) => (
-                    <Chip key={day} size="small" label={dayLabels[day] || day} />
-                  ))}
-                </Stack>
+                {item.openTime} - {item.closeTime}
               </TableCell>
               <TableCell align="right">
                 <Stack direction="row" spacing={1} justifyContent="flex-end">

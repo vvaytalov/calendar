@@ -1,29 +1,27 @@
 import { makeAutoObservable } from 'mobx';
 import { hasSpecialConflicts } from './rules';
-import type { BaseSchedule, SpecialSchedule } from './types';
+import type { TimeTableEntry, TimeTableZone } from './types';
 
 export class ScheduleModel {
-  baseById = new Map<string, BaseSchedule>();
-  specialById = new Map<string, SpecialSchedule>();
+  zone: TimeTableZone | null = null;
 
   constructor() {
     makeAutoObservable(this, {}, { autoBind: true });
   }
 
-  setData(base: BaseSchedule[], special: SpecialSchedule[]) {
-    this.baseById = new Map(base.map((item) => [item.id, item]));
-    this.specialById = new Map(special.map((item) => [item.id, item]));
+  setZone(zone: TimeTableZone) {
+    this.zone = zone;
   }
 
-  get baseList(): BaseSchedule[] {
-    return [...this.baseById.values()];
+  get workTime(): TimeTableEntry[] {
+    return this.zone?.workTime ?? [];
   }
 
-  get specialList(): SpecialSchedule[] {
-    return [...this.specialById.values()].sort((a, b) => b.priority - a.priority);
+  get specialTime(): TimeTableEntry[] {
+    return this.zone?.specialTime ?? [];
   }
 
   get hasConflicts(): boolean {
-    return hasSpecialConflicts(this.specialList);
+    return hasSpecialConflicts(this.specialTime);
   }
 }

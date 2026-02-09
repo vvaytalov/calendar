@@ -2,40 +2,32 @@ export type DayNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 export type ScheduleKind = 'base' | 'special';
 
-export interface BaseSchedule {
+export interface TimeTableEntryApi {
+  day?: string;
+  date?: string;
+  openTime?: string;
+  closeTime?: string;
+}
+
+export interface TimeTableZoneApi {
   id: string;
-  title: string;
-  timeFrom: string;
-  timeTo: string;
-  daysOfWeek: DayNumber[];
-  validFrom: string;
-  validTo: string | null;
-  zoneId?: string;
-  isActive?: boolean;
+  workTime?: TimeTableEntryApi[];
+  specialTime?: TimeTableEntryApi[];
 }
 
-export interface SpecialSchedule {
+export type TimeTableZonesResponse = TimeTableZoneApi[];
+export type TimeTableZonesPayload = TimeTableZoneApi[];
+
+export interface TimeTableEntry {
   id: string;
-  title: string;
-  dateFrom: string;
-  dateTo: string;
-  priority: number;
-  reason?: string;
-  isOverrideBase: boolean;
-  zoneId?: string;
+  day?: DayNumber | null;
+  date?: string | null;
+  openTime: string;
+  closeTime: string;
 }
 
-export interface ScheduleResponse {
-  base: BaseSchedule[];
-  special: SpecialSchedule[];
+export interface TimeTableZone {
+  id: string;
+  workTime: TimeTableEntry[];
+  specialTime: TimeTableEntry[];
 }
-
-export type BaseSchedulePayload = Pick<
-  BaseSchedule,
-  'title' | 'timeFrom' | 'timeTo' | 'daysOfWeek' | 'validFrom' | 'validTo'
->;
-
-export type SpecialSchedulePayload = Pick<
-  SpecialSchedule,
-  'title' | 'dateFrom' | 'dateTo' | 'priority' | 'reason' | 'isOverrideBase'
->;

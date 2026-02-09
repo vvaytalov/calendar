@@ -1,4 +1,4 @@
-import { FormControl, InputLabel, MenuItem, Paper, Select, Stack, TextField } from '@mui/material';
+import { FormControl, InputLabel, MenuItem, Paper, Select, Stack } from '@mui/material';
 import { panelSx } from '../../../shared/ui/schedulePanelStyles';
 import { scheduleFieldSx } from '../../../shared/ui/scheduleFieldSx';
 import {
@@ -34,16 +34,9 @@ export function SpecialForm({
         <FormTitle>
           {editingKind === 'special' ? 'Редактирование' : 'Создание'} специального расписания
         </FormTitle>
-        <TextField
-          label="Заголовок"
-          size="small"
-          value={specialForm.title}
-          onChange={(e) => onChange({ title: e.target.value })}
-          sx={scheduleFieldSx}
-        />
 
         <Stack spacing={0.5}>
-          <FieldLabel>День</FieldLabel>
+          <FieldLabel>Дата</FieldLabel>
           <DateRangeFields
             fromLabel="Начало"
             toLabel="Окончание"
@@ -55,11 +48,18 @@ export function SpecialForm({
           />
         </Stack>
 
+        <FormControl size="small" sx={scheduleFieldSx} fullWidth disabled>
+          <InputLabel>Повторяемость</InputLabel>
+          <Select value="year" label="Повторяемость">
+            <MenuItem value="year">Каждый год</MenuItem>
+          </Select>
+        </FormControl>
+
         <Stack spacing={0.5}>
-          <FieldLabel>Часы</FieldLabel>
+          <FieldLabel>Время</FieldLabel>
           <TimeRangeFields
-            fromLabel="Время (начало)"
-            toLabel="Время (окончание)"
+            fromLabel="Время (начала)"
+            toLabel="Время (окончания)"
             fromValue={specialForm.timeFrom}
             toValue={specialForm.timeTo}
             onChangeFrom={(value) => onChange({ timeFrom: value })}
@@ -67,20 +67,6 @@ export function SpecialForm({
             fieldSx={scheduleFieldSx}
           />
         </Stack>
-
-        <FormControl size="small" sx={scheduleFieldSx} fullWidth>
-          <InputLabel>Повторяемость</InputLabel>
-          <Select
-            value={specialForm.recurrence}
-            label="Повторяемость"
-            onChange={(e) =>
-              onChange({ recurrence: e.target.value as SpecialFormState['recurrence'] })
-            }
-          >
-            <MenuItem value="none">Отсутствует</MenuItem>
-            <MenuItem value="yearly">Каждый год</MenuItem>
-          </Select>
-        </FormControl>
 
         <FormActions onCancel={onCancel} onSave={onSave} disableSave={!canSave} />
       </Stack>

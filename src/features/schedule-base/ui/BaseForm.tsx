@@ -1,14 +1,4 @@
-import {
-  Checkbox,
-  Divider,
-  FormControl,
-  FormControlLabel,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Stack
-} from '@mui/material';
+import { Checkbox, Divider, FormControlLabel, Paper, Stack } from '@mui/material';
 import { DaysSelector } from './DaysSelector';
 import { panelSx } from '../../../shared/ui/schedulePanelStyles';
 import { scheduleFieldSx } from '../../../shared/ui/scheduleFieldSx';
@@ -39,37 +29,37 @@ export function BaseForm({
   onCancel,
   onSave
 }: BaseFormProps) {
-  const hasWeekdayDates = Boolean(baseForm.weekdayFrom && baseForm.weekdayTo);
   const hasWeekdayDays = baseForm.weekdayDays.length > 0;
-  const hasWeekendDates = Boolean(baseForm.weekendFrom && baseForm.weekendTo);
   const hasWeekendDays = baseForm.weekendDays.length > 0;
+  const hasWeekdayTime = Boolean(baseForm.weekdayTimeFrom && baseForm.weekdayTimeTo);
+  const hasWeekendTime = Boolean(baseForm.weekendTimeFrom && baseForm.weekendTimeTo);
   const canSave = baseForm.sameAsWeekdays
-    ? hasWeekdayDates && hasWeekdayDays
-    : hasWeekdayDates && hasWeekdayDays && hasWeekendDates && hasWeekendDays;
+    ? hasWeekdayDays && hasWeekdayTime
+    : (hasWeekdayDays && hasWeekdayTime) || (hasWeekendDays && hasWeekendTime);
 
   return (
     <Paper elevation={0} sx={panelSx}>
       <Stack spacing={1.25}>
-        <FormTitle>{baseForm.weekdayTitle}</FormTitle>
+        <FormTitle>Рабочие дни</FormTitle>
 
         <Stack spacing={0.5}>
-          <FieldLabel>День</FieldLabel>
+          <FieldLabel>Дата</FieldLabel>
           <DateRangeFields
             fromLabel="Начало"
             toLabel="Окончание"
-            fromValue={baseForm.weekdayFrom}
-            toValue={baseForm.weekdayTo}
-            onChangeFrom={(value) => onChange({ weekdayFrom: value })}
-            onChangeTo={(value) => onChange({ weekdayTo: value })}
+            fromValue={baseForm.dateFrom}
+            toValue={baseForm.dateTo}
+            onChangeFrom={(value) => onChange({ dateFrom: value })}
+            onChangeTo={(value) => onChange({ dateTo: value })}
             fieldSx={scheduleFieldSx}
           />
         </Stack>
 
         <Stack spacing={0.5}>
-          <FieldLabel>Часы</FieldLabel>
+          <FieldLabel>Время</FieldLabel>
           <TimeRangeFields
-            fromLabel="Время (начало)"
-            toLabel="Время (окончание)"
+            fromLabel="Время (начала)"
+            toLabel="Время (окончания)"
             fromValue={baseForm.weekdayTimeFrom}
             toValue={baseForm.weekdayTimeTo}
             onChangeFrom={(value) => onChange({ weekdayTimeFrom: value })}
@@ -77,6 +67,8 @@ export function BaseForm({
             fieldSx={scheduleFieldSx}
           />
         </Stack>
+
+        <DaysSelector label="Дни" value={baseForm.weekdayDays} onToggle={onToggleWeekday} />
 
         <FormControlLabel
           sx={{
@@ -95,35 +87,19 @@ export function BaseForm({
               sx={{ color: '#D1D5DB', '&.Mui-checked': { color: '#22C55E' } }}
             />
           }
-          label="Будние и выходные дни совпадают"
+          label="Использовать настройки будней для выходных"
         />
-
-        <DaysSelector label="Дни" value={baseForm.weekdayDays} onToggle={onToggleWeekday} />
-
-        <FormControl size="small" sx={scheduleFieldSx} fullWidth>
-          <InputLabel>Повторяемость</InputLabel>
-          <Select
-            value={baseForm.recurrence}
-            label="Повторяемость"
-            onChange={(e) =>
-              onChange({ recurrence: e.target.value as BaseFormState['recurrence'] })
-            }
-          >
-            <MenuItem value="yearly">Каждый год</MenuItem>
-            <MenuItem value="none">Отсутствует</MenuItem>
-          </Select>
-        </FormControl>
 
         {!baseForm.sameAsWeekdays && (
           <>
             <Divider />
-            <FormTitle>{baseForm.weekendTitle}</FormTitle>
+            <FormTitle>Выходные дни</FormTitle>
 
             <Stack spacing={0.5}>
-              <FieldLabel>Часы</FieldLabel>
+              <FieldLabel>Время</FieldLabel>
               <TimeRangeFields
-                fromLabel="Время (начало)"
-                toLabel="Время (окончание)"
+                fromLabel="Время (начала)"
+                toLabel="Время (окончания)"
                 fromValue={baseForm.weekendTimeFrom}
                 toValue={baseForm.weekendTimeTo}
                 onChangeFrom={(value) => onChange({ weekendTimeFrom: value })}
@@ -133,20 +109,6 @@ export function BaseForm({
             </Stack>
 
             <DaysSelector label="Дни" value={baseForm.weekendDays} onToggle={onToggleWeekend} />
-
-            <FormControl size="small" sx={scheduleFieldSx} fullWidth>
-              <InputLabel>Повторяемость</InputLabel>
-              <Select
-                value={baseForm.recurrence}
-                label="Повторяемость"
-                onChange={(e) =>
-                  onChange({ recurrence: e.target.value as BaseFormState['recurrence'] })
-                }
-              >
-                <MenuItem value="yearly">Каждый год</MenuItem>
-                <MenuItem value="none">Отсутствует</MenuItem>
-              </Select>
-            </FormControl>
           </>
         )}
 

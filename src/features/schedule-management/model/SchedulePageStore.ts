@@ -1,7 +1,7 @@
-﻿import { makeAutoObservable, reaction, runInAction } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import { CalendarViewStore } from './CalendarViewStore';
 import { createBaseFormState, createSpecialFormState } from './formDefaults';
-import { buildBasePayloads, buildSpecialPayload, toBaseCards, toSpecialCards } from './mappers';
+import { buildSpecialEntries, buildWorkEntries, toBaseCards, toSpecialCards } from './mappers';
 import { toDateInput } from '../../../shared/lib/dateFormat';
 import type {
   BaseCard,
@@ -11,18 +11,8 @@ import type {
   SpecialCard,
   SpecialFormState
 } from './types';
-import type { BaseSchedule, DayNumber } from '../../../entities/schedule/model/types';
+import type { DayNumber, TimeTableEntry } from '../../../entities/schedule/model/types';
 import type { ZoneScheduleStore } from '../../../entities/schedule/model/ZoneScheduleStore';
-
-const DAY_LABELS: Record<DayNumber, string> = {
-  1: 'пн',
-  2: 'вт',
-  3: 'ср',
-  4: 'чт',
-  5: 'пт',
-  6: 'сб',
-  7: 'вс'
-};
 
 export class SchedulePageStore {
   panelMode: 'none' | 'base-form' | 'special-form' = 'none';
@@ -48,7 +38,7 @@ export class SchedulePageStore {
     makeAutoObservable(this, { dataStore: false, calendarStore: false }, { autoBind: true });
 
     reaction(
-      () => this.dataStore.zoneCode,
+      () => this.dataStore.zoneId,
       () => {
         this.dataStore.load();
       },
@@ -57,11 +47,11 @@ export class SchedulePageStore {
   }
 
   get hasAnySchedules(): boolean {
-    return this.dataStore.baseSchedules.length > 0 || this.dataStore.specialSchedules.length > 0;
+    return this.dataStore.workTime.length > 0 || this.dataStore.specialTime.length > 0;
   }
 
   get hasBaseSchedules(): boolean {
-    return this.dataStore.baseSchedules.length > 0;
+    return this.dataStore.workTime.length > 0;
   }
 
   get loading(): boolean {
@@ -77,19 +67,29 @@ export class SchedulePageStore {
   }
 
   get baseCards(): BaseCard[] {
-    return toBaseCards(this.dataStore.baseSchedules);
+    return toBaseCards(this.dataStore.workTime);
   }
 
   get specialCards(): SpecialCard[] {
-    return toSpecialCards(this.dataStore.specialSchedules);
+    return toSpecialCards(this.dataStore.specialTime);
   }
 
   get selectedCount(): number {
     return this.selectedBaseIds.length + this.selectedSpecialIds.length;
   }
 
+  get selectedCardCount(): number {
+    const baseSelected = this.baseCards.filter((card) =>
+      card.ids.every((id) => this.selectedBaseIds.includes(id))
+    ).length;
+    const specialSelected = this.specialCards.filter((card) =>
+      card.ids.every((id) => this.selectedSpecialIds.includes(id))
+    ).length;
+    return baseSelected + specialSelected;
+  }
+
   get allSelected(): boolean {
-    const total = this.dataStore.baseSchedules.length + this.dataStore.specialSchedules.length;
+    const total = this.dataStore.workTime.length + this.dataStore.specialTime.length;
     return total > 0 && this.selectedCount === total;
   }
 
@@ -98,7 +98,7 @@ export class SchedulePageStore {
   }
 
   get isMultiSelect(): boolean {
-    return this.selectedCount > 1;
+    return this.selectedCardCount > 1;
   }
 
   updateBaseForm(patch: Partial<BaseFormState>) {
@@ -123,12 +123,12 @@ export class SchedulePageStore {
     };
   }
 
-  toggleBaseSelection(id: string) {
-    this.selectedBaseIds = this.toggleSelection(this.selectedBaseIds, id);
+  toggleBaseSelection(ids: string[]) {
+    this.selectedBaseIds = this.toggleSelectionMany(this.selectedBaseIds, ids);
   }
 
-  toggleSpecialSelection(id: string) {
-    this.selectedSpecialIds = this.toggleSelection(this.selectedSpecialIds, id);
+  toggleSpecialSelection(ids: string[]) {
+    this.selectedSpecialIds = this.toggleSelectionMany(this.selectedSpecialIds, ids);
   }
 
   toggleAllSelections() {
@@ -138,8 +138,8 @@ export class SchedulePageStore {
       return;
     }
 
-    this.selectedBaseIds = this.dataStore.baseSchedules.map((item) => item.id);
-    this.selectedSpecialIds = this.dataStore.specialSchedules.map((item) => item.id);
+    this.selectedBaseIds = this.dataStore.workTime.map((item) => item.id);
+    this.selectedSpecialIds = this.dataStore.specialTime.map((item) => item.id);
   }
 
   clearSelections() {
@@ -157,33 +157,35 @@ export class SchedulePageStore {
     return list.includes(id) ? list.filter((item) => item !== id) : [...list, id];
   }
 
+  private toggleSelectionMany(list: string[], ids: string[]): string[] {
+    const allSelected = ids.every((id) => list.includes(id));
+    if (allSelected) return list.filter((item) => !ids.includes(item));
+    const next = new Set(list);
+    ids.forEach((id) => next.add(id));
+    return Array.from(next);
+  }
+
   resetEditing() {
     this.editing = null;
     this.panelMode = 'none';
   }
 
   startCreateBase() {
-    if (this.hasBaseSchedules) {
-      this.startCreateSpecial();
-      return;
-    }
     this.notice = '';
     this.editing = null;
+    this.baseForm = createBaseFormState();
     this.panelMode = 'base-form';
   }
 
   startCreateSpecial() {
     this.notice = '';
     this.editing = null;
+    this.specialForm = createSpecialFormState();
     this.panelMode = 'special-form';
   }
 
   startCreate() {
-    if (this.hasBaseSchedules) {
-      this.startCreateSpecial();
-    } else {
-      this.startCreateBase();
-    }
+    this.startCreateBase();
   }
 
   changeModeFromCalendar(date: Date) {
@@ -197,85 +199,81 @@ export class SchedulePageStore {
     this.panelMode = 'special-form';
   }
 
-  private findBaseByDays(days: DayNumber[]): BaseSchedule | undefined {
-    return this.dataStore.baseSchedules.find(
-      (item) =>
-        item.daysOfWeek.length === days.length && days.every((d) => item.daysOfWeek.includes(d))
-    );
-  }
+  editBaseCard(card: BaseCard) {
+    const items = this.dataStore.workTime.filter((base) => card.ids.includes(base.id));
+    if (items.length === 0) return;
 
-  editBaseById(id: string) {
-    const item = this.dataStore.baseSchedules.find((base) => base.id === id);
-    if (!item) return;
+    const next = createBaseFormState();
+    const first = items[0];
+    next.weekdayTimeFrom = first.openTime;
+    next.weekdayTimeTo = first.closeTime;
+    next.weekendTimeFrom = first.openTime;
+    next.weekendTimeTo = first.closeTime;
 
-    const weekdayExisting = this.findBaseByDays([1, 2, 3, 4, 5]) || item;
-    const weekendExisting = this.findBaseByDays([6, 7]);
+    if (card.kind === 'date') {
+      const dates = items.map((item) => item.date).filter(Boolean) as string[];
+      dates.sort();
+      if (dates.length > 0) {
+        next.dateFrom = dates[0];
+        next.dateTo = dates[dates.length - 1];
+      }
+      const dayNumbers = dates.map((value) => {
+        const date = new Date(value);
+        const jsDay = date.getDay();
+        return (((jsDay + 6) % 7) + 1) as DayNumber;
+      });
+      next.weekdayDays = Array.from(new Set(dayNumbers.filter((day) => day <= 5))).sort(
+        (a, b) => a - b
+      );
+      next.weekendDays = Array.from(new Set(dayNumbers.filter((day) => day >= 6))).sort(
+        (a, b) => a - b
+      );
+      next.sameAsWeekdays = true;
+    } else if (card.kind === 'weekend') {
+      const days = items.map((item) => item.day).filter(Boolean) as DayNumber[];
+      next.weekdayDays = [];
+      next.weekendDays = days;
+      next.sameAsWeekdays = false;
+    } else {
+      const days = items.map((item) => item.day).filter(Boolean) as DayNumber[];
+      next.weekdayDays = days;
+      next.weekendDays = [];
+      next.sameAsWeekdays = true;
+    }
 
-    this.editing = { kind: 'base', id: item.id };
-    this.baseForm = {
-      ...this.baseForm,
-      weekdayTitle: weekdayExisting?.title || this.baseForm.weekdayTitle,
-      weekdayFrom: toDateInput(weekdayExisting?.validFrom),
-      weekdayTo: toDateInput(weekdayExisting?.validTo),
-      weekdayTimeFrom: weekdayExisting?.timeFrom || this.baseForm.weekdayTimeFrom,
-      weekdayTimeTo: weekdayExisting?.timeTo || this.baseForm.weekdayTimeTo,
-      weekdayDays: weekdayExisting?.daysOfWeek || this.baseForm.weekdayDays,
-      weekendTitle: weekendExisting?.title || this.baseForm.weekendTitle,
-      weekendFrom: toDateInput(weekendExisting?.validFrom),
-      weekendTo: toDateInput(weekendExisting?.validTo),
-      weekendTimeFrom: weekendExisting?.timeFrom || this.baseForm.weekendTimeFrom,
-      weekendTimeTo: weekendExisting?.timeTo || this.baseForm.weekendTimeTo,
-      weekendDays: weekendExisting?.daysOfWeek || this.baseForm.weekendDays,
-      sameAsWeekdays: !weekendExisting
-    };
+    this.editing = { kind: 'base', id: card.id, ids: card.ids };
+    this.baseForm = next;
     this.panelMode = 'base-form';
   }
 
-  editSpecialById(id: string) {
-    const item = this.dataStore.specialSchedules.find((special) => special.id === id);
-    if (!item) return;
+  editSpecialByIds(ids: string[]) {
+    const items = this.dataStore.specialTime.filter((special) => ids.includes(special.id));
+    if (items.length === 0) return;
+    const dates = items.map((item) => item.date).filter(Boolean) as string[];
+    dates.sort();
 
-    const from = new Date(item.dateFrom);
-    const to = new Date(item.dateTo);
-
-    this.editing = { kind: 'special', id: item.id };
+    this.editing = { kind: 'special', id: ids[0], ids };
     this.specialForm = {
       ...createSpecialFormState(),
-      title: item.title,
-      dateFrom: toDateInput(from),
-      dateTo: toDateInput(to),
-      timeFrom: from.toISOString().slice(11, 16),
-      timeTo: to.toISOString().slice(11, 16)
+      dateFrom: dates[0] || '',
+      dateTo: dates[dates.length - 1] || '',
+      timeFrom: items[0].openTime,
+      timeTo: items[0].closeTime
     };
     this.panelMode = 'special-form';
   }
 
   async saveBase() {
-    const { weekday, weekend } = buildBasePayloads(this.baseForm);
+    const entries = buildWorkEntries(this.baseForm);
+    if (entries.length === 0) return;
 
     if (this.editing?.kind === 'base') {
-      const weekdayExisting = this.findBaseByDays(this.baseForm.weekdayDays);
-      const weekendExisting = this.findBaseByDays(this.baseForm.weekendDays);
-
-      if (weekdayExisting) await this.dataStore.editBase(weekdayExisting.id, weekday);
-      else await this.dataStore.addBase(weekday);
-
-      if (!this.baseForm.sameAsWeekdays) {
-        if (weekendExisting) await this.dataStore.editBase(weekendExisting.id, weekend);
-        else await this.dataStore.addBase(weekend);
-      } else if (weekendExisting) {
-        await this.dataStore.removeBase(weekendExisting.id);
-      }
-
+      await this.dataStore.replaceWorkEntries(this.editing.ids ?? [this.editing.id], entries);
       runInAction(() => {
         this.notice = 'Основное расписание обновлено';
       });
     } else {
-      await this.dataStore.addBase(weekday);
-      if (!this.baseForm.sameAsWeekdays) {
-        await this.dataStore.addBase(weekend);
-      }
-
+      await this.dataStore.addWorkEntries(entries);
       runInAction(() => {
         this.notice = 'Основное расписание создано';
       });
@@ -287,15 +285,16 @@ export class SchedulePageStore {
   }
 
   async saveSpecial() {
-    const payload = buildSpecialPayload(this.specialForm);
+    const entries = buildSpecialEntries(this.specialForm);
+    if (entries.length === 0) return;
 
     if (this.editing?.kind === 'special') {
-      await this.dataStore.editSpecial(this.editing.id, payload);
+      await this.dataStore.replaceSpecialEntries(this.editing.ids ?? [this.editing.id], entries);
       runInAction(() => {
         this.notice = 'Специальное расписание обновлено';
       });
     } else {
-      await this.dataStore.addSpecial(payload);
+      await this.dataStore.addSpecialEntries(entries);
       runInAction(() => {
         this.notice = 'Специальное расписание создано';
       });
@@ -342,12 +341,12 @@ export class SchedulePageStore {
     this.closeConfirm();
   }
 
-  deleteBase(id: string) {
-    this.openDeleteDialog([id], []);
+  deleteBase(ids: string[]) {
+    this.openDeleteDialog(ids, []);
   }
 
-  deleteSpecial(id: string) {
-    this.openDeleteDialog([], [id]);
+  deleteSpecial(ids: string[]) {
+    this.openDeleteDialog([], ids);
   }
 
   deleteSelected() {
@@ -356,8 +355,8 @@ export class SchedulePageStore {
   }
 
   clearAll() {
-    const allBaseIds = this.dataStore.baseSchedules.map((item) => item.id);
-    const allSpecialIds = this.dataStore.specialSchedules.map((item) => item.id);
+    const allBaseIds = this.dataStore.workTime.map((item) => item.id);
+    const allSpecialIds = this.dataStore.specialTime.map((item) => item.id);
     this.openDeleteDialog(allBaseIds, allSpecialIds, 'Удалить все');
   }
 
@@ -370,62 +369,218 @@ export class SchedulePageStore {
 
     this.requestConfirm({
       title: 'Удаление',
-      description: 'Вы уверены, что хотите удалить режимы работы:',
+      description: this.getDeleteDescription(confirmLabel),
       confirmLabel,
       details,
-      reasonLabel: 'Причина удаления',
-      reasonPlaceholder: 'Опишите причину удаления (например, обновление графика или ошибочная загрузка).',
       onConfirm: async () => {
         await Promise.all([
-          ...baseIds.map((id) => this.dataStore.removeBase(id)),
-          ...specialIds.map((id) => this.dataStore.removeSpecial(id))
+          ...baseIds.map((id) => this.dataStore.removeWorkEntry(id)),
+          ...specialIds.map((id) => this.dataStore.removeSpecialEntry(id))
         ]);
         runInAction(() => {
           this.notice =
             confirmLabel === 'Удалить все'
-              ? 'Все расписания удалены'
+              ? 'Все записи удалены'
               : confirmLabel === 'Удалить выбранные'
-                ? 'Выбранные расписания удалены'
-                : 'Расписание удалено';
+                ? 'Выбранные записи удалены'
+                : 'Запись удалена';
           this.selectedBaseIds = this.selectedBaseIds.filter((id) => !baseIds.includes(id));
-          this.selectedSpecialIds = this.selectedSpecialIds.filter((id) => !specialIds.includes(id));
+          this.selectedSpecialIds = this.selectedSpecialIds.filter(
+            (id) => !specialIds.includes(id)
+          );
         });
       }
     });
   }
 
-  private buildDetailsForIds(baseIds: string[], specialIds: string[]): {
+  private buildDetailsForIds(
+    baseIds: string[],
+    specialIds: string[]
+  ): {
     base: string[];
     special: string[];
   } {
     const baseSet = new Set(baseIds);
     const specialSet = new Set(specialIds);
 
+    const baseItems = this.dataStore.workTime.filter((item) => baseSet.has(item.id));
+    const specialItems = this.dataStore.specialTime.filter((item) => specialSet.has(item.id));
+
     return {
-      base: this.dataStore.baseSchedules
-        .filter((item) => baseSet.has(item.id))
-        .map((item) => {
-          const fromLabel = this.formatDateFull(item.validFrom);
-          const toLabel = this.formatDateFull(item.validTo);
-          const daysLabel = this.formatDaysLabel(item.daysOfWeek);
-          return `${fromLabel} - ${toLabel} (${daysLabel} ${item.timeFrom} - ${item.timeTo})`;
-        }),
-      special: this.dataStore.specialSchedules
-        .filter((item) => specialSet.has(item.id))
-        .map((item) => {
-          const from = new Date(item.dateFrom);
-          const to = new Date(item.dateTo);
-          const fromLabel = this.formatDateFull(from);
-          const toLabel = this.formatDateFull(to);
-          const days = Math.max(1, Math.ceil((to.getTime() - from.getTime()) / 86400000) + 1);
-          const dateLabel =
-            fromLabel === toLabel
-              ? `${fromLabel} (${days} дн.)`
-              : `${fromLabel} - ${toLabel} (${days} дн.)`;
-          const timeLabel = `${from.toISOString().slice(11, 16)} - ${to.toISOString().slice(11, 16)}`;
-          return `${dateLabel} - ${timeLabel}`;
-        })
+      base: this.formatBaseDetails(baseItems),
+      special: this.formatSpecialDetails(specialItems)
     };
+  }
+
+  private getDeleteDescription(confirmLabel: string): string {
+    if (confirmLabel === 'Удалить все') {
+      return 'Вы уверены, что хотите удалить все режимы работы:';
+    }
+    if (confirmLabel === 'Удалить выбранные') {
+      return 'Вы уверены, что хотите удалить выбранные режимы работы:';
+    }
+    return 'Вы уверены, что хотите удалить режим работы:';
+  }
+
+  private formatBaseDetails(items: TimeTableEntry[]): string[] {
+    if (items.length === 0) return [];
+    const year = this.calendarStore.year;
+    const yearRange = `${this.formatDateShort(`${year}-01-01`)} - ${this.formatDateShort(
+      `${year}-12-31`
+    )}`;
+
+    const dayBased = items.filter((item) => item.day);
+    const dateBased = items.filter((item) => item.date);
+
+    const lines: string[] = [];
+
+    const timeGroups: Record<string, { weekday: boolean; weekend: boolean }> = {};
+    dayBased.forEach((item) => {
+      const timeLabel = `${item.openTime} - ${item.closeTime}`;
+      if (!timeGroups[timeLabel]) {
+        timeGroups[timeLabel] = { weekday: false, weekend: false };
+      }
+      const isWeekend = (item.day ?? 0) >= 6;
+      if (isWeekend) {
+        timeGroups[timeLabel].weekend = true;
+      } else {
+        timeGroups[timeLabel].weekday = true;
+      }
+    });
+
+    Object.keys(timeGroups)
+      .sort()
+      .forEach((timeLabel) => {
+        const group = timeGroups[timeLabel];
+        if (group.weekday) {
+          lines.push(`${yearRange} (Будни ${timeLabel})`);
+        }
+        if (group.weekend) {
+          lines.push(`${yearRange} (Выходные ${timeLabel})`);
+        }
+      });
+
+    if (dateBased.length > 0) {
+      const rangesByTime = this.buildRangesByTime(dateBased);
+      rangesByTime.forEach(({ timeLabel, ranges }) => {
+        ranges.forEach((range) => {
+          const rangeLabel = this.formatDateRangeShort(range.from, range.to);
+          const dayType = this.getRangeDayType(range.from, range.to);
+          const typeLabel =
+            dayType === 'weekday' ? 'Будни ' : dayType === 'weekend' ? 'Выходные ' : '';
+          lines.push(`${rangeLabel} (${typeLabel}${timeLabel})`);
+        });
+      });
+    }
+
+    return lines;
+  }
+
+  private formatSpecialDetails(items: TimeTableEntry[]): string[] {
+    if (items.length === 0) return [];
+    const rangesByTime = this.buildRangesByTime(items);
+    const lines: string[] = [];
+
+    rangesByTime.forEach(({ timeLabel, ranges }) => {
+      ranges.forEach((range) => {
+        const days = this.countDays(range.from, range.to);
+        const daysLabel = `${days} дн.`;
+        if (range.from === range.to) {
+          lines.push(`${this.formatDateFull(range.from)} (${daysLabel}) - ${timeLabel}`);
+          return;
+        }
+        lines.push(
+          `${this.formatDateFull(range.from)} - ${this.formatDateFull(range.to)} (${daysLabel}) - ${timeLabel}`
+        );
+      });
+    });
+
+    return lines;
+  }
+
+  private buildRangesByTime(items: TimeTableEntry[]): Array<{
+    timeLabel: string;
+    ranges: Array<{ from: string; to: string }>;
+  }> {
+    const grouped: Record<string, string[]> = {};
+    items.forEach((item) => {
+      if (!item.date) return;
+      const timeLabel = `${item.openTime} - ${item.closeTime}`;
+      if (!grouped[timeLabel]) grouped[timeLabel] = [];
+      grouped[timeLabel].push(item.date);
+    });
+
+    return Object.entries(grouped).map(([timeLabel, dates]) => ({
+      timeLabel,
+      ranges: this.buildDateRanges(dates)
+    }));
+  }
+
+  private buildDateRanges(dates: string[]): Array<{ from: string; to: string }> {
+    const sorted = Array.from(new Set(dates)).sort();
+    if (sorted.length === 0) return [];
+    const ranges: Array<{ from: string; to: string }> = [];
+    let start = sorted[0];
+    let prev = sorted[0];
+    for (let i = 1; i < sorted.length; i += 1) {
+      const current = sorted[i];
+      const prevDate = new Date(prev);
+      const nextDate = new Date(prevDate);
+      nextDate.setDate(prevDate.getDate() + 1);
+      if (nextDate.toISOString().slice(0, 10) === current) {
+        prev = current;
+        continue;
+      }
+      ranges.push({ from: start, to: prev });
+      start = current;
+      prev = current;
+    }
+    ranges.push({ from: start, to: prev });
+    return ranges;
+  }
+
+  private countDays(from: string, to: string): number {
+    const start = new Date(from);
+    const end = new Date(to);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 0;
+    const diffMs = end.getTime() - start.getTime();
+    return Math.floor(diffMs / (24 * 60 * 60 * 1000)) + 1;
+  }
+
+  private getRangeDayType(from: string, to: string): 'weekday' | 'weekend' | 'mixed' {
+    const start = new Date(from);
+    const end = new Date(to);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return 'mixed';
+    let hasWeekday = false;
+    let hasWeekend = false;
+    const cursor = new Date(start);
+    while (cursor <= end) {
+      const day = cursor.getDay();
+      if (day === 0 || day === 6) {
+        hasWeekend = true;
+      } else {
+        hasWeekday = true;
+      }
+      if (hasWeekday && hasWeekend) return 'mixed';
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    if (hasWeekday && !hasWeekend) return 'weekday';
+    if (hasWeekend && !hasWeekday) return 'weekend';
+    return 'mixed';
+  }
+
+  private formatDateRangeShort(from: string, to: string): string {
+    if (from === to) return this.formatDateShort(from);
+    return `${this.formatDateShort(from)} - ${this.formatDateShort(to)}`;
+  }
+
+  private formatDateShort(value: string | Date): string {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '-';
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: '2-digit',
+      month: 'long'
+    }).format(date);
   }
 
   private formatDateFull(value: string | Date): string {
@@ -436,16 +591,5 @@ export class SchedulePageStore {
       month: 'long',
       year: 'numeric'
     }).format(date);
-  }
-
-  private formatDaysLabel(days: DayNumber[]): string {
-    const sorted = [...days].sort((a, b) => a - b);
-    const weekdays = [1, 2, 3, 4, 5];
-    const weekend = [6, 7];
-    const isWeekdays = sorted.length === 5 && weekdays.every((day) => sorted.includes(day));
-    if (isWeekdays) return 'Будни';
-    const isWeekend = sorted.length === 2 && weekend.every((day) => sorted.includes(day));
-    if (isWeekend) return 'Выходные';
-    return `Дни ${sorted.map((day) => DAY_LABELS[day]).join(', ')}`;
   }
 }
